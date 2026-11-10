@@ -25,7 +25,7 @@ LifeSpace is an AI-powered personal productivity environment. Users describe the
 | Focus Mode | Distraction-free single-task sessions | Later |
 | Memory Garden | Visual history of completed work | Later |
 
-Release scope is defined in `docs/PRD.md`.
+Release scope is defined in `docs/product/PRD.md`.
 
 ## Documentation
 
@@ -33,13 +33,13 @@ All specifications live in [`docs/`](docs/README.md).
 
 | Document | Governs |
 |---|---|
-| [`PRD.md`](docs/PRD.md) | Product vision, scope, requirements, acceptance criteria |
-| [`BUSINESS_RULES.md`](docs/BUSINESS_RULES.md) | Domain behavior, lifecycle, scheduling, AI permissions |
-| [`USER_FLOWS.md`](docs/USER_FLOWS.md) | End-to-end journeys and edge cases |
-| [`AGENT_SPEC.md`](docs/AGENT_SPEC.md) | AI Companion behavior, tools, approval orchestration |
-| [`UI_UX_SPEC.md`](docs/UI_UX_SPEC.md) | Visual language, navigation, interaction design |
-| [`CLAUDE_INSTRUCTIONS.md`](docs/CLAUDE_INSTRUCTIONS.md) | Architect and reviewer responsibilities, collaboration workflow |
-| [`TECHNICAL_BLUEPRINT.md`](docs/TECHNICAL_BLUEPRINT.md) | Proposed architecture, stack, roadmap, open decisions |
+| [`PRD.md`](docs/product/PRD.md) | Product vision, scope, requirements, acceptance criteria |
+| [`BUSINESS_RULES.md`](docs/business/BUSINESS_RULES.md) | Domain behavior, lifecycle, scheduling, AI permissions |
+| [`USER_FLOWS.md`](docs/product/USER_FLOWS.md) | End-to-end journeys and edge cases |
+| [`AGENT_SPEC.md`](docs/engineering/AGENT_SPEC.md) | AI Companion behavior, tools, approval orchestration |
+| [`UI_UX_SPEC.md`](docs/design/UI_UX_SPEC.md) | Visual language, navigation, interaction design |
+| [`CLAUDE_INSTRUCTIONS.md`](docs/engineering/CLAUDE_INSTRUCTIONS.md) | Architect and reviewer responsibilities, collaboration workflow |
+| [`TECHNICAL_BLUEPRINT.md`](docs/engineering/TECHNICAL_BLUEPRINT.md) | Proposed architecture, stack, roadmap, open decisions |
 
 ## Repository layout
 
@@ -47,13 +47,14 @@ Current:
 
 ```
 lifespace/
-├── docs/
-│   ├── adr/             Architecture decision records
-│   ├── codex-prompts/   Implementation prompts issued to the coding agent
-│   ├── reviews/         Code review reports
-│   └── *.md             Product and technical specifications
 ├── .gitignore
-└── README.md
+├── README.md
+└── docs/
+    ├── README.md        Documentation index and authority order
+    ├── product/         PRD, user flows
+    ├── design/          UI and UX specification
+    ├── business/        Business rules
+    └── engineering/     Agent spec, workflow, blueprint, Codex prompts
 ```
 
 Planned application directories (`apps/web`, `apps/api`) are defined in the technical blueprint and will be created during the first implementation milestone after the stack is approved.

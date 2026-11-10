@@ -13,7 +13,7 @@ ROLE
 You are the implementation agent for LifeSpace. A separate technical architect reviews every change from the Git diff. Implement exactly this task and nothing else.
 
 BEFORE WRITING ANY CODE
-1. Read docs/README.md, docs/TECHNICAL_BLUEPRINT.md (sections 2 to 5), docs/CLAUDE_INSTRUCTIONS.md (sections 3, 6, 7), and docs/BUSINESS_RULES.md (section 1).
+1. Read docs/README.md, docs/engineering/TECHNICAL_BLUEPRINT.md (sections 2 to 5), docs/engineering/CLAUDE_INSTRUCTIONS.md (sections 3, 6, 7), and docs/business/BUSINESS_RULES.md (section 1).
 2. Run git status. Create the branch m0/foundation from main.
 3. If anything in this task conflicts with the docs or is ambiguous, stop and ask. Do not invent product behavior.
 
@@ -39,7 +39,7 @@ DELIVERABLES
 - Append to .gitignore only if a tool you add produces files that are not yet ignored.
 
 2. Backend (apps/api)
-- pyproject.toml with requires-python, uv lockfile, and the package layout from docs/TECHNICAL_BLUEPRINT.md section 5.
+- pyproject.toml with requires-python, uv lockfile, and the package layout from docs/engineering/TECHNICAL_BLUEPRINT.md section 5.
 - Packages under src/lifespace: domain, application, infrastructure, api, ai. Each __init__.py holds a one-paragraph docstring stating the layer's responsibility and what it may not import. No other code in these packages except what is listed below.
 - main.py: application factory create_app() and a module-level app. main.py is the composition root and is the only place that wires infrastructure into the application.
 - config.py: typed Settings from environment covering environment name, database URL, allowed CORS origins, and log level. No default values for secrets. Reject a wildcard CORS origin.

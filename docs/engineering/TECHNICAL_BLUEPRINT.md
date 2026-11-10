@@ -2,7 +2,7 @@
 
 **Status:** Proposed. Awaiting product-owner approval. Nothing in this document is final until recorded as an ADR.
 **Author role:** Technical architect and reviewer
-**Inputs:** `PRD.md`, `BUSINESS_RULES.md`, `USER_FLOWS.md`, `AGENT_SPEC.md`, `UI_UX_SPEC.md`, `CLAUDE_INSTRUCTIONS.md`
+**Inputs:** `docs/product/PRD.md`, `docs/business/BUSINESS_RULES.md`, `docs/product/USER_FLOWS.md`, `docs/engineering/AGENT_SPEC.md`, `docs/design/UI_UX_SPEC.md`, `docs/engineering/CLAUDE_INSTRUCTIONS.md`
 
 ---
 
@@ -10,7 +10,7 @@
 
 ### 1.1 Result
 
-All six specification files are present and preserved byte for byte in `docs/`. The documents are consistent in intent. The conflicts below must be resolved before the affected milestone starts.
+All six specification files are present and preserved byte for byte under `docs/`, organized into `product/`, `design/`, `business/`, and `engineering/`. The documents are consistent in intent. The conflicts below must be resolved before the affected milestone starts.
 
 ### 1.2 Conflicts and gaps
 
@@ -212,7 +212,7 @@ lifespace/
 
 ## 8. Development roadmap
 
-Each milestone ends with a review report in `docs/reviews/` and owner acceptance.
+Each milestone ends with a review report in `docs/engineering/reviews/` (created when the first review is written) and owner acceptance.
 
 | Milestone | Scope | PRD alignment |
 |---|---|---|
