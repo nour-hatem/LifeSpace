@@ -1,0 +1,82 @@
+# ---------------------------------------------------------------
+# Secrets and local configuration (never commit)
+# ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials*.json
+service-account*.json
+
+# ---------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.import_linter_cache/
+.coverage
+.coverage.*
+htmlcov/
+build/
+*.whl
+
+# ---------------------------------------------------------------
+# Node / frontend
+# ---------------------------------------------------------------
+node_modules/
+dist/
+.vite/
+.turbo/
+.eslintcache
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# ---------------------------------------------------------------
+# Testing artifacts
+# ---------------------------------------------------------------
+playwright-report/
+test-results/
+blob-report/
+
+# ---------------------------------------------------------------
+# Databases and local data
+# ---------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+pgdata/
+postgres-data/
+/data/
+*.dump
+
+# ---------------------------------------------------------------
+# Logs and temporary files
+# ---------------------------------------------------------------
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.swp
+
+# ---------------------------------------------------------------
+# Editors and operating systems
+# ---------------------------------------------------------------
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
