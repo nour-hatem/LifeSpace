@@ -37,7 +37,7 @@ The six original specification files are preserved unchanged. They refer to each
 
 | Item | Purpose |
 |---|---|
-| [`engineering/TECHNICAL_BLUEPRINT.md`](engineering/TECHNICAL_BLUEPRINT.md) | Proposed architecture, stack, source structure, roadmap, specification audit, and decisions awaiting approval |
+| [`engineering/TECHNICAL_BLUEPRINT.md`](engineering/TECHNICAL_BLUEPRINT.md) | Approved architecture, stack and versions, repository structure, conventions, roadmap, specification audit, and open product decisions |
 | [`engineering/codex-prompts/`](engineering/codex-prompts/) | Numbered implementation prompts issued to the coding agent |
 
 ## Document authority

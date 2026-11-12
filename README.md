@@ -4,7 +4,7 @@
 
 LifeSpace is an AI-powered personal productivity environment. Users describe their commitments in natural language, and LifeSpace turns them into structured tasks, schedules, and projects shown through an interactive 2D spatial workspace instead of a conventional task dashboard.
 
-> **Project status:** Pre-implementation. The product specification is complete and the technical blueprint is awaiting approval. No application code exists yet.
+> **Project status:** Pre-implementation. The product specification is complete and the technical blueprint is approved (baseline v1). The foundation task (M0) is ready for implementation. No application code exists yet.
 
 ## Core principles
 
@@ -57,7 +57,7 @@ lifespace/
     └── engineering/     Agent spec, workflow, blueprint, Codex prompts
 ```
 
-Planned application directories (`apps/web`, `apps/api`) are defined in the technical blueprint and will be created during the first implementation milestone after the stack is approved.
+The application directories (`apps/api`, `apps/web`) and root tooling are defined in the technical blueprint (section 5) and are created by the first implementation task.
 
 ## Development workflow
 
