@@ -1,6 +1,6 @@
 # Codex Prompt 001: M0 Foundation
 
-**Status:** Revised for the owner's actual environment. Waiting for owner approval before it is sent to Codex.
+**Status:** Reference specification for the whole task. It is executed as 6 self-contained parts (`001-01` to `001-06` in this folder) because the implementation agent has a 200K token context. If a part and this file disagree, the part wins.
 **Milestone:** M0 Foundation (local, single user)
 **Branch:** `m0/foundation`
 **Blueprint:** `docs/engineering/TECHNICAL_BLUEPRINT.md` v1.1

@@ -54,7 +54,7 @@ lifespace/
     ├── product/         PRD, user flows
     ├── design/          UI and UX specification
     ├── business/        Business rules
-    └── engineering/     Agent spec, workflow, blueprint, Codex prompts
+    └── engineering/     Agent spec, workflow, blueprint, implementation prompts
 ```
 
 The application directories (`apps/api`, `apps/web`) and root tooling are defined in the technical blueprint (section 5) and are created by the first implementation task.
@@ -65,7 +65,7 @@ LifeSpace is built with three roles.
 
 - **Product owner and product partner** define requirements, business rules, and acceptance criteria.
 - **Technical architect and reviewer** plans architecture, writes scoped implementation tasks, and reviews every change against the specifications.
-- **Coding agent (Codex in VS Code)** is the only agent that writes application source code.
+- **Coding agent (OpenCode with DeepSeek)** is the only agent that writes application source code.
 
 Every feature moves through product definition, technical planning, implementation, review, correction, verification, and product acceptance. No milestone starts before the previous one is reviewed.
 

@@ -423,7 +423,7 @@ The web app has no API base URL because it always calls `/api` on its own origin
 
 ## 18. Delivery workflow
 
-- One branch per Codex task named `m<milestone>/<slug>`. Conventional commit messages. No direct commits to `main`.
+- One branch per implementation task named `m<milestone>/<slug>`. Conventional commit messages. No direct commits to `main`.
 - `make check` is the quality gate and must pass before a task is reported complete.
 - CI and dependency update automation are deferred until after M2, when real tests justify them.
 
