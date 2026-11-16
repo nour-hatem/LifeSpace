@@ -15,10 +15,11 @@ docs/
     ├── AGENT_SPEC.md
     ├── CLAUDE_INSTRUCTIONS.md
     ├── TECHNICAL_BLUEPRINT.md
+    ├── adr/
     └── codex-prompts/
 ```
 
-Folders for architecture decision records (`engineering/adr/`) and review reports (`engineering/reviews/`) are created when the first record exists.
+Architecture decision records live in `engineering/adr/` (one file per decision, starting with `0001-m1-domain-decisions.md`). A folder for review reports (`engineering/reviews/`) is created when the first report is written.
 
 ## Specifications
 
