@@ -111,6 +111,19 @@ def test_the_same_interval_in_two_offsets_is_equal(
     assert not in_utc < in_zone
 
 
+def test_equality_uses_instants_in_an_ambiguous_local_hour() -> None:
+    cairo = ZoneInfo("Africa/Cairo")
+    end = datetime(2025, 10, 30, 20, tzinfo=UTC)
+    local_end = end.astimezone(cairo)
+    in_utc = TimeInterval(start=end - timedelta(hours=1), end=end)
+    in_cairo = TimeInterval(start=(end - timedelta(hours=1)).astimezone(cairo), end=local_end)
+    assert in_cairo == in_utc
+    assert not in_cairo < in_utc
+    assert in_cairo.touches(
+        TimeInterval(start=local_end, end=datetime(2025, 10, 30, 21, tzinfo=UTC))
+    )
+
+
 @given(start=utc_instants, span=durations)
 def test_ordering_uses_the_instant(start: datetime, span: timedelta) -> None:
     earlier = TimeInterval(start=start, end=start + span)

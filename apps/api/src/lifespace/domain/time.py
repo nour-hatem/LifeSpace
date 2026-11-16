@@ -38,13 +38,14 @@ def start_of_local_day(day: date, tz: ZoneInfo) -> datetime:
     return local_midnight.astimezone(UTC).astimezone(tz)
 
 
-@dataclass(frozen=True, slots=True, order=True)
+@dataclass(frozen=True, slots=True, eq=False)
 class TimeInterval:
     """A half-open interval ``[start, end)`` of timezone-aware datetimes.
 
     ``start`` is included and ``end`` is excluded (ADR 0001 item 13). Both
     bounds are validated as aware, and ``end`` must be strictly after ``start``
-    (ADR 0001 item 14).
+    (ADR 0001 item 14). Equality and ordering use the instants, so the same
+    interval written in two different offsets is equal.
     """
 
     start: datetime
@@ -54,8 +55,39 @@ class TimeInterval:
         """Validate the bounds and their order (ADR 0001 items 13 and 14)."""
         ensure_aware(self.start, field="start")
         ensure_aware(self.end, field="end")
-        if self.end <= self.start:
+        start_instant, end_instant = self._instant_key()
+        if end_instant <= start_instant:
             raise DomainValidationError("end must be strictly after start", field="end")
+
+    def _instant_key(self) -> tuple[datetime, datetime]:
+        """Return both bounds normalized to UTC, removing any fold ambiguity."""
+        return (self.start.astimezone(UTC), self.end.astimezone(UTC))
+
+    def __eq__(self, other: object) -> bool:
+        """Compare the interval by its instants (ADR 0001 item 14)."""
+        if not isinstance(other, TimeInterval):
+            return NotImplemented
+        return self._instant_key() == other._instant_key()
+
+    def __hash__(self) -> int:
+        """Hash the interval by its instants (ADR 0001 item 14)."""
+        return hash(self._instant_key())
+
+    def __lt__(self, other: TimeInterval) -> bool:
+        """Order intervals by their start and end instants."""
+        return self._instant_key() < other._instant_key()
+
+    def __le__(self, other: TimeInterval) -> bool:
+        """Order intervals by their start and end instants."""
+        return self._instant_key() <= other._instant_key()
+
+    def __gt__(self, other: TimeInterval) -> bool:
+        """Order intervals by their start and end instants."""
+        return self._instant_key() > other._instant_key()
+
+    def __ge__(self, other: TimeInterval) -> bool:
+        """Order intervals by their start and end instants."""
+        return self._instant_key() >= other._instant_key()
 
     def duration(self) -> timedelta:
         """Return ``end - start``."""
@@ -71,7 +103,9 @@ class TimeInterval:
 
     def touches(self, other: TimeInterval) -> bool:
         """Return whether the intervals are adjacent, sharing only a boundary (ADR 0001 item 13)."""
-        return self.end == other.start or other.end == self.start
+        self_start, self_end = self._instant_key()
+        other_start, other_end = other._instant_key()
+        return self_end == other_start or other_end == self_start
 
     def contains(self, instant: datetime) -> bool:
         """Return whether ``start <= instant < end`` (ADR 0001 item 13)."""
