@@ -71,7 +71,63 @@ Every feature moves through product definition, technical planning, implementati
 
 ## Getting started
 
-Not available yet. Setup instructions will be added when the foundation milestone is accepted.
+### Prerequisites
+
+- **Node 22.22.3** through nvm (the version in `.nvmrc`)
+- **npm 10.9.8**, installed with Node. pnpm is not installed and is not used.
+- **uv 0.11.28** for the isolated Python environment
+- **Docker Desktop** with Compose, which runs PostgreSQL 18
+- **GNU Make**
+
+### One-time Docker preparation
+
+Start Docker Desktop, then select its context:
+
+```bash
+docker context use desktop-linux
+```
+
+`make doctor` fails when the Docker daemon is unreachable.
+
+### Disk space
+
+Keep at least 3 GB free on the filesystem that holds the repository. `make doctor` fails below that threshold.
+
+### First run
+
+```bash
+cd "/path/to/LifeSpace"
+make doctor    # check Node, npm, uv, Docker, disk space, and ports
+make setup     # create .env and install the Python and JavaScript dependencies
+make db-up     # start PostgreSQL 18 on 127.0.0.1:5433
+make migrate   # apply the Alembic migrations
+```
+
+### Daily commands
+
+```bash
+make dev-api    # API on 127.0.0.1:8000 (one terminal)
+make dev-web    # web app on 127.0.0.1:5173 (another terminal)
+make smoke      # check both servers and the Vite proxy
+make test       # backend and frontend tests
+make check      # lint, typecheck, test, and build
+make db-down    # stop the database, keeping its data
+make db-reset   # delete local database data and recreate the database
+```
+
+The web app runs at <http://127.0.0.1:5173> and the API health endpoint at <http://127.0.0.1:8000/api/health>.
+
+The database is published only on `127.0.0.1:5433`. A host PostgreSQL service on port 5432 is not used by this project. SQL files in `infra/postgres/init/` run only when the database volume is created for the first time, so after changing them run `make db-reset`.
+
+### Troubleshooting
+
+| Symptom | Cause and fix |
+|---|---|
+| `docker info` or `make db-up` fails | Docker Desktop is not running. Start it and run `docker context use desktop-linux`. |
+| A port is in use (`5433`, `8000`, `5173`) | Another process owns it. Stop that process; `make doctor` lists the ports it checks. |
+| Writes fail with `ENOSPC` | Free space on the filesystem that holds the repository. At least 3 GB is required. |
+| npm skips devDependencies | The login shell exports `NODE_ENV=production`. `apps/web/.npmrc` sets `include=dev`, and every npm script runs through `env -u NODE_ENV`. |
+| uv tries to download Python | Not allowed here. Every uv call runs with `UV_PYTHON_DOWNLOADS=never` (exported by the Makefile); Python 3.14.4 is already installed. |
 
 ## License
 
