@@ -12,6 +12,7 @@ from alembic.config import Config
 from sqlalchemy import text
 
 from lifespace.infrastructure.db import create_engine
+from tests.integration.conftest import require_test_database_url_sync
 
 API_DIR = Path(__file__).resolve().parents[2]
 ALEMBIC_INI = API_DIR / "alembic.ini"
@@ -36,13 +37,14 @@ def _applied_revisions(url: str) -> list[str]:
     return asyncio.run(read())
 
 
-def test_baseline_migrates_up_and_down(test_database_url: str) -> None:
-    config = _config(test_database_url)
+def test_baseline_migrates_up_and_down() -> None:
+    url = require_test_database_url_sync()
+    config = _config(url)
     try:
         command.upgrade(config, "head")
-        assert _applied_revisions(test_database_url) == ["0001"]
+        assert _applied_revisions(url) == ["0001"]
 
         command.downgrade(config, "base")
-        assert _applied_revisions(test_database_url) == []
+        assert _applied_revisions(url) == []
     finally:
         command.downgrade(config, "base")
