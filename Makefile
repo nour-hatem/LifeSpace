@@ -5,7 +5,7 @@ API := apps/api
 WEB := apps/web
 
 .PHONY: doctor env db-up db-down db-reset lock api-setup api-lint api-format \
-	api-typecheck api-test dev-api
+	api-typecheck api-test migrate migrate-down dev-api
 
 doctor:
 	bash scripts/doctor.sh
@@ -50,6 +50,12 @@ api-typecheck:
 
 api-test:
 	cd "$(API)" && uv run pytest
+
+migrate:
+	uv run --project "$(API)" alembic -c "$(API)/alembic.ini" upgrade head
+
+migrate-down:
+	uv run --project "$(API)" alembic -c "$(API)/alembic.ini" downgrade base
 
 dev-api:
 	uv run --project "$(API)" uvicorn --factory lifespace.main:create_app --reload --reload-dir "$(API)/src" --host 127.0.0.1 --port 8000
