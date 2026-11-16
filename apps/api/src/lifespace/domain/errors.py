@@ -40,7 +40,17 @@ class InvalidTransitionError(DomainError):
 
     code: str = "invalid_transition"
 
-    def __init__(self, from_status: str, to_status: str) -> None:
-        super().__init__(f"transition from {from_status!r} to {to_status!r} is not allowed")
+    def __init__(
+        self,
+        from_status: str,
+        to_status: str,
+        *,
+        allowed: tuple[str, ...] | None = None,
+    ) -> None:
+        message = f"transition from {from_status!r} to {to_status!r} is not allowed"
+        if allowed is not None:
+            allowed_text = ", ".join(allowed) if allowed else "none"
+            message = f"{message}; allowed next statuses: {allowed_text}"
+        super().__init__(message)
         self.from_status = from_status
         self.to_status = to_status
