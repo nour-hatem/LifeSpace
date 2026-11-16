@@ -4,7 +4,7 @@
 
 LifeSpace is an AI-powered personal productivity environment. Users describe their commitments in natural language, and LifeSpace turns them into structured tasks, schedules, and projects shown through an interactive 2D spatial workspace instead of a conventional task dashboard.
 
-> **Project status:** Pre-implementation. The product specification is complete and the technical blueprint is approved (baseline v1). The foundation task (M0) is ready for implementation. No application code exists yet.
+> **Project status:** Foundation (M0) is implemented: a local single-user FastAPI backend, a React frontend, PostgreSQL 18 in Docker, a migration baseline, and quality tooling. There are no product features yet. The next milestone is M1 (domain core).
 
 ## Core principles
 
@@ -43,21 +43,19 @@ All specifications live in [`docs/`](docs/README.md).
 
 ## Repository layout
 
-Current:
-
 ```
 lifespace/
-├── .gitignore
-├── README.md
-└── docs/
-    ├── README.md        Documentation index and authority order
-    ├── product/         PRD, user flows
-    ├── design/          UI and UX specification
-    ├── business/        Business rules
-    └── engineering/     Agent spec, workflow, blueprint, implementation prompts
+├── .editorconfig  .env.example  .gitignore  .nvmrc
+├── AGENTS.md  Makefile  README.md  docker-compose.yml
+├── apps/
+│   ├── api/         FastAPI backend (uv project, Alembic migrations, tests)
+│   └── web/         React frontend (npm package, Vite, Vitest)
+├── docs/            Specifications, blueprint, implementation prompts
+├── infra/postgres/  Database init scripts
+└── scripts/         doctor.sh and smoke.sh
 ```
 
-The application directories (`apps/api`, `apps/web`) and root tooling are defined in the technical blueprint (section 5) and are created by the first implementation task.
+The layout follows section 5 of the technical blueprint. Later milestones add `domain/`, `application/`, and `ai/` to the API and features, a router, and a design system to the web app.
 
 ## Development workflow
 
