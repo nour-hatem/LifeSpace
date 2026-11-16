@@ -63,3 +63,22 @@ name = "infrastructure must not import api"
 type = "forbidden"
 source_modules = ["lifespace.infrastructure"]
 forbidden_modules = ["lifespace.api"]
+
+[[tool.importlinter.contracts]]
+name = "domain must stay pure"
+type = "forbidden"
+source_modules = ["lifespace.domain"]
+forbidden_modules = [
+  "fastapi",
+  "starlette",
+  "sqlalchemy",
+  "asyncpg",
+  "alembic",
+  "pydantic",
+  "pydantic_settings",
+  "httpx",
+  "uvicorn",
+  "lifespace.api",
+  "lifespace.infrastructure",
+  "lifespace.config",
+]
