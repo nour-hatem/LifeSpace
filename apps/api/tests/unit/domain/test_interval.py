@@ -12,7 +12,7 @@ from hypothesis import strategies as st
 from lifespace.domain.errors import DomainValidationError
 from lifespace.domain.time import TimeInterval
 
-from ._strategies import ZONES, durations, intervals, utc_instants
+from .strategies import ZONES, durations, intervals, utc_instants
 
 
 def test_rejects_naive_start() -> None:

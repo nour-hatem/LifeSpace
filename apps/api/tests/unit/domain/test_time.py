@@ -12,7 +12,7 @@ from hypothesis import strategies as st
 from lifespace.domain.errors import DomainValidationError
 from lifespace.domain.time import ensure_aware, local_date, start_of_local_day
 
-from ._strategies import ZONES, dates
+from .strategies import ZONES, dates
 
 CAIRO = ZoneInfo("Africa/Cairo")
 

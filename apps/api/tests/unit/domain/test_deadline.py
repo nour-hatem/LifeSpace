@@ -13,7 +13,7 @@ from lifespace.domain.deadline import DateDeadline, DateTimeDeadline, Deadline, 
 from lifespace.domain.errors import DomainValidationError
 from lifespace.domain.time import start_of_local_day
 
-from ._strategies import ZONES, dates, deadlines, utc_instants
+from .strategies import ZONES, dates, deadlines, utc_instants
 
 CAIRO = ZoneInfo("Africa/Cairo")
 UTC_ZONE = ZoneInfo("UTC")
