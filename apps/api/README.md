@@ -10,7 +10,7 @@ engine.
 |---|---|---|
 | `lifespace.api` | HTTP routing, request and response schemas, problem+json error mapping. It must not import `lifespace.infrastructure` or SQLAlchemy. | Present |
 | `lifespace.infrastructure` | Technical adapters: the async engine, shared metadata, and logging. It must not import `lifespace.api`. | Present |
-| `lifespace.domain` | Frozen dataclasses and pure rules: lifecycle, time intervals, scheduling. No framework, database, HTTP, or Pydantic imports. | M1 |
+| `lifespace.domain` | Frozen dataclasses and pure rules: lifecycle, time intervals, scheduling. No framework, database, HTTP, or Pydantic imports. | Present |
 | `lifespace.application` | Use cases, validation, and the ports they need. It imports `domain` only. | M1 |
 | `lifespace.ai` | Intents, tool allowlist, orchestration, and the model port. It calls `application` only. | M7 |
 
@@ -37,6 +37,46 @@ The rules from the technical blueprint are enforced where both sides exist:
 2. `lifespace.infrastructure` must not import `lifespace.api`.
 
 Contracts for the other layers are added when those packages exist.
+
+## Domain layer (M1)
+
+The pure domain lives in `apps/api/src/lifespace/domain` and has no I/O. It
+imports only the standard library and other `lifespace.domain` modules. It
+never reads the clock or generates ids: callers pass `now`, identifiers, and
+the user's `ZoneInfo`. `make api-lint` enforces the purity contract.
+
+| Module | Public API |
+|---|---|
+| `errors` | `DomainError`, `DomainValidationError`, `InvalidTransitionError` |
+| `time` | `ensure_aware`, `local_date`, `start_of_local_day`, `TimeInterval` |
+| `deadline` | `DateDeadline`, `DateTimeDeadline`, `Deadline`, `is_deadline_passed` |
+| `task` | `Task`, `TaskStatus`, `Priority`, `Category`, `TaskSource`, `UNSET`, `create_task`, `edit_task` |
+| `lifecycle` | `ALLOWED_TRANSITIONS`, `StatusEvent`, `TransitionResult`, `transition_task` |
+| `overdue` | `is_overdue` |
+
+Run the domain tests without a database:
+
+```bash
+cd apps/api
+uv run pytest tests/unit/domain
+```
+
+Caller-facing ADR 0001 decisions:
+
+| Item | Rule |
+|---|---|
+| 2 | A date-only deadline ends at the end of that local day; it passes at the first instant of the next local day. |
+| 3 | A date-time deadline passes strictly after its instant. |
+| 4 | `create_task` accepts only `INBOX` and `PLANNED`. |
+| 5, 6 | Only `ALLOWED_TRANSITIONS` are legal; a transition to the same status is rejected. |
+| 7 | Completing or canceling keeps the deadline, the schedule, and the estimate. |
+| 8 | Reopening clears `completed_at`, `canceled_at`, and the reason, and drops a schedule that already ended. |
+| 9 | Overdue is computed from the deadline and status, never stored. |
+| 10, 11 | An estimate is a positive whole number of minutes; a title is trimmed and non-empty. |
+| 12 | Deadline, schedule, and estimate are independent. |
+| 13 | Intervals are half-open: start inclusive, end exclusive. |
+| 14 | Every datetime is timezone-aware; the domain never reads the clock. |
+| 16 | Edits are not restricted by status. |
 
 ## Settings
 

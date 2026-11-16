@@ -37,7 +37,7 @@ The coding agent implements the current task only, never another milestone.
 
 ## Layer dependency rules
 
-- `domain` imports no framework, database, HTTP, or model SDK.
+- The `domain` package (present) imports no framework, database, HTTP, or model SDK.
 - `application` imports `domain` only and reaches infrastructure through ports.
 - `infrastructure` implements ports; it never imports `api` or `ai`.
 - `api` calls `application`; it never imports `infrastructure` or SQLAlchemy.
