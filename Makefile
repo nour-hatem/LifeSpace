@@ -4,7 +4,8 @@ export UV_PYTHON_DOWNLOADS := never
 API := apps/api
 WEB := apps/web
 
-.PHONY: doctor env db-up db-down db-reset
+.PHONY: doctor env db-up db-down db-reset lock api-setup api-lint api-format \
+	api-typecheck api-test dev-api
 
 doctor:
 	bash scripts/doctor.sh
@@ -29,3 +30,26 @@ db-reset:
 		y|Y) docker compose down -v && docker compose up -d --wait ;; \
 		*) echo "aborted; nothing was deleted" ;; \
 	esac
+
+lock:
+	uv lock --project "$(API)"
+
+api-setup:
+	uv sync --project "$(API)" --locked
+
+api-lint:
+	cd "$(API)" && uv run ruff check .
+	cd "$(API)" && uv run ruff format --check .
+	cd "$(API)" && uv run lint-imports
+
+api-format:
+	cd "$(API)" && uv run ruff format .
+
+api-typecheck:
+	cd "$(API)" && uv run mypy
+
+api-test:
+	cd "$(API)" && uv run pytest
+
+dev-api:
+	uv run --project "$(API)" uvicorn --factory lifespace.main:create_app --reload --reload-dir "$(API)/src" --host 127.0.0.1 --port 8000
