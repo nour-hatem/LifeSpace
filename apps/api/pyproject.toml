@@ -26,6 +26,7 @@ dev = [
   "ruff",
   "mypy",
   "import-linter",
+  "hypothesis==6.170.15",
 ]
 
 [tool.hatch.build.targets.wheel]
