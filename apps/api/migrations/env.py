@@ -15,6 +15,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from lifespace.config import Settings
+from lifespace.infrastructure import models  # noqa: F401  (register the tables)
 from lifespace.infrastructure.db import metadata
 
 config = context.config
