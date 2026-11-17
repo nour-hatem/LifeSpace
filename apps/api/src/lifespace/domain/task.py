@@ -12,7 +12,7 @@ from uuid import UUID
 
 from lifespace.domain.deadline import Deadline
 from lifespace.domain.errors import DomainValidationError
-from lifespace.domain.time import TimeInterval, ensure_aware
+from lifespace.domain.time import TimeInterval, as_instant, ensure_aware
 
 
 class TaskStatus(StrEnum):
@@ -84,7 +84,7 @@ UNSET = _Unset()
 class Task:
     """A task snapshot with its validated deadline, estimate, and schedule.
 
-    The model implements ADR 0001 items 4, 7, 10, 11, 12, 14, and 16. A
+    The model implements ADR 0001 items 4, 7, 10, 11, 12, 14, 16, and 19. A
     deadline and a scheduled interval are independent: editing one never
     changes the other or the estimate (ADR 0001 item 12).
     """
@@ -106,7 +106,7 @@ class Task:
     cancellation_reason: str | None = None
 
     def __post_init__(self) -> None:
-        """Validate every task invariant (ADR 0001 items 4, 7, 10, 11, 14, 16)."""
+        """Validate every task invariant (ADR 0001 items 4, 7, 10, 11, 14, 16, 19)."""
         stripped_title = self.title.strip()
         if not stripped_title:
             raise DomainValidationError("title must not be empty", field="title")
@@ -121,7 +121,7 @@ class Task:
             ensure_aware(self.completed_at, field="completed_at")
         if self.canceled_at is not None:
             ensure_aware(self.canceled_at, field="canceled_at")
-        if self.updated_at < self.created_at:
+        if as_instant(self.updated_at) < as_instant(self.created_at):
             raise DomainValidationError(
                 "updated_at must not be before created_at", field="updated_at"
             )
@@ -228,10 +228,11 @@ def edit_task(
     the lifecycle timestamps never change here; ``updated_at`` becomes ``now``.
     Editing is not restricted by status (ADR 0001 item 16), and editing the
     deadline, the schedule, or the estimate never changes the other two
-    (ADR 0001 item 12).
+    (ADR 0001 item 12). The ``now`` check compares UTC instants (ADR 0001
+    item 19).
     """
     ensure_aware(now, field="now")
-    if now < task.updated_at:
+    if as_instant(now) < as_instant(task.updated_at):
         raise DomainValidationError("now must not be before the task updated_at", field="now")
 
     return Task(

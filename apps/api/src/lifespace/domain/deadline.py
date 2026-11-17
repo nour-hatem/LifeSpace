@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from lifespace.domain.time import ensure_aware, start_of_local_day
+from lifespace.domain.time import as_instant, ensure_aware, start_of_local_day
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,11 +35,13 @@ def is_deadline_passed(deadline: Deadline, now: datetime, tz: ZoneInfo) -> bool:
 
     A ``DateTimeDeadline`` has passed strictly after its instant: ``now > at``.
     A ``DateDeadline`` has passed from the first instant of the next local
-    calendar day: ``now >= start_of_local_day(day + 1 day, tz)``.
-    ``now`` must be timezone-aware.
+    calendar day: ``now >= start_of_local_day(day + 1 day, tz)``. Both sides
+    are compared as UTC instants (ADR 0001 item 19), and ``now`` must be
+    timezone-aware.
     """
     ensure_aware(now, field="now")
+    now_instant = as_instant(now)
     if isinstance(deadline, DateTimeDeadline):
-        return now > deadline.at
+        return now_instant > as_instant(deadline.at)
     next_day = deadline.day + timedelta(days=1)
-    return now >= start_of_local_day(next_day, tz)
+    return now_instant >= as_instant(start_of_local_day(next_day, tz))

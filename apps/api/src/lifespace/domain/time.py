@@ -20,6 +20,18 @@ def ensure_aware(value: datetime, *, field: str) -> datetime:
     return value
 
 
+def as_instant(value: datetime) -> datetime:
+    """Return ``value`` as a UTC instant (ADR 0001 item 19).
+
+    Python compares and subtracts two aware datetimes that share the same
+    ``tzinfo`` object by their wall-clock fields, ignoring the UTC offset and
+    the ``fold``. Every comparison and subtraction in the domain therefore goes
+    through this function, which converts with ``astimezone(UTC)``. A naive
+    value is rejected with ``DomainValidationError`` (ADR 0001 item 14).
+    """
+    return ensure_aware(value, field="value").astimezone(UTC)
+
+
 def local_date(instant: datetime, tz: ZoneInfo) -> date:
     """Return the calendar date of ``instant`` in ``tz`` (ADR 0001 item 2)."""
     return ensure_aware(instant, field="instant").astimezone(tz).date()
@@ -61,7 +73,7 @@ class TimeInterval:
 
     def _instant_key(self) -> tuple[datetime, datetime]:
         """Return both bounds normalized to UTC, removing any fold ambiguity."""
-        return (self.start.astimezone(UTC), self.end.astimezone(UTC))
+        return (as_instant(self.start), as_instant(self.end))
 
     def __eq__(self, other: object) -> bool:
         """Compare the interval by its instants (ADR 0001 item 14)."""
@@ -90,16 +102,24 @@ class TimeInterval:
         return self._instant_key() >= other._instant_key()
 
     def duration(self) -> timedelta:
-        """Return ``end - start``."""
-        return self.end - self.start
+        """Return the real elapsed time from ``start`` to ``end`` (ADR 0001 item 19).
+
+        The bounds are converted to UTC instants first, so a daylight saving
+        change between them is reflected in the result.
+        """
+        start_instant, end_instant = self._instant_key()
+        return end_instant - start_instant
 
     def overlaps(self, other: TimeInterval) -> bool:
         """Return whether the intervals share an instant (ADR 0001 item 13).
 
-        Uses exactly ``start < other.end and other.start < end``; adjacent
-        intervals therefore do not overlap.
+        Uses exactly ``start < other.end and other.start < end`` on UTC
+        instants (ADR 0001 item 19); adjacent intervals therefore do not
+        overlap.
         """
-        return self.start < other.end and other.start < self.end
+        self_start, self_end = self._instant_key()
+        other_start, other_end = other._instant_key()
+        return self_start < other_end and other_start < self_end
 
     def touches(self, other: TimeInterval) -> bool:
         """Return whether the intervals are adjacent, sharing only a boundary (ADR 0001 item 13)."""
@@ -108,15 +128,19 @@ class TimeInterval:
         return self_end == other_start or other_end == self_start
 
     def contains(self, instant: datetime) -> bool:
-        """Return whether ``start <= instant < end`` (ADR 0001 item 13)."""
-        ensure_aware(instant, field="instant")
-        return self.start <= instant < self.end
+        """Return whether ``start <= instant < end`` by UTC instant (ADR 0001 item 19)."""
+        instant_utc = as_instant(instant)
+        start_instant, end_instant = self._instant_key()
+        return start_instant <= instant_utc < end_instant
 
     def intersection(self, other: TimeInterval) -> TimeInterval | None:
         """Return the shared interval, or ``None`` when the intervals do not overlap.
 
-        The rule is ADR 0001 item 13.
+        The rule is ADR 0001 item 13, applied to UTC instants (ADR 0001 item
+        19). The result is expressed in UTC, not in the zone of either input.
         """
         if not self.overlaps(other):
             return None
-        return TimeInterval(start=max(self.start, other.start), end=min(self.end, other.end))
+        self_start, self_end = self._instant_key()
+        other_start, other_end = other._instant_key()
+        return TimeInterval(start=max(self_start, other_start), end=min(self_end, other_end))

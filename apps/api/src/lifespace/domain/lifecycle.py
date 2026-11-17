@@ -10,7 +10,7 @@ from uuid import UUID
 
 from lifespace.domain.errors import DomainValidationError, InvalidTransitionError
 from lifespace.domain.task import Task, TaskStatus
-from lifespace.domain.time import TimeInterval, ensure_aware
+from lifespace.domain.time import TimeInterval, as_instant, ensure_aware
 
 ALLOWED_TRANSITIONS: Mapping[TaskStatus, frozenset[TaskStatus]] = MappingProxyType(
     {
@@ -74,10 +74,11 @@ def transition_task(
     Completing or canceling sets the agreeing timestamp and keeps the deadline,
     the schedule, and the estimate (ADR 0001 item 7). Reopening a completed or
     canceled task clears the lifecycle timestamps and drops a schedule that has
-    already ended (ADR 0001 item 8). The input task is never mutated.
+    already ended (ADR 0001 item 8). The input task is never mutated. The
+    ``now`` and schedule checks compare UTC instants (ADR 0001 item 19).
     """
     ensure_aware(now, field="now")
-    if now < task.updated_at:
+    if as_instant(now) < as_instant(task.updated_at):
         raise DomainValidationError("now must not be before the task updated_at", field="now")
 
     allowed = ALLOWED_TRANSITIONS[task.status]
@@ -104,7 +105,7 @@ def transition_task(
         completed_at = None
         canceled_at = None
         cancellation_reason = None
-        if scheduled is not None and scheduled.end <= now:
+        if scheduled is not None and as_instant(scheduled.end) <= as_instant(now):
             discarded_schedule = scheduled
             scheduled = None
 
