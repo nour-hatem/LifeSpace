@@ -34,6 +34,7 @@ Out of scope, and not to be started in M1:
 | 16 | Edits are not restricted by status. The specifications do not forbid editing completed or canceled tasks. Status changes only through `transition_task` | No invented restriction |
 | 17 | Domain errors are typed: `DomainValidationError` (code `validation_failed`) and `InvalidTransitionError` (code `invalid_transition`) | The API layer maps them to problem+json in M2 |
 | 18 | Limitation: a calendar day that does not exist in a time zone (for example Pacific/Apia on 2011-12-30) is out of scope. Property tests use zones where every day exists | Not relevant to the owner's use |
+| 19 | Every comparison and every subtraction of datetimes goes through UTC instants. Python compares and subtracts two datetimes that share the same `tzinfo` object by their wall-clock fields and ignores the UTC offset, which gives wrong answers across a daylight saving change and inside an ambiguous hour. Stored values keep the zone the caller gave. Comparisons convert both sides with `astimezone(UTC)` first | Review of M1 on 2026-11-16 reproduced three defects (duration across a transition, overdue inside the ambiguous hour, a rejected valid `now`) |
 
 ## Verified time zone facts (Africa/Cairo, 2026, from the system tz database)
 - Spring forward: 2026-04-23T22:00:00Z. Local 00:00 on 2026-04-24 does not exist, so the first instant of that local day is 01:00+03:00 (2026-04-23T22:00:00Z).
