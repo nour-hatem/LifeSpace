@@ -462,7 +462,7 @@ These are not technical decisions. Each blocks the milestone shown.
 | P8 | Week and month Time Flow views | After the daily view | M5 |
 | P9 | AI task creation always shows a review step in MVP | Yes | M7 |
 
-P1 to P4 were adopted provisionally on 2026-11-16 so that M1 could start. They are recorded, with the other M1 rules, in `adr/0001-m1-domain-decisions.md`. The owner may override them at any time.
+P1 to P4 were adopted provisionally on 2026-11-16 so that M1 could start, and the M2 decisions are recorded in `adr/0002-m2-persistence-and-task-api.md`. They are recorded, with the other M1 rules, in `adr/0001-m1-domain-decisions.md`. The owner may override them at any time.
 
 ---
 
