@@ -217,9 +217,10 @@ async def test_completed_to_completed_is_rejected_and_writes_nothing(
     clock.set(START + timedelta(minutes=1))
     await transition_task(uow_factory, clock, ids, task_id, TaskStatus.COMPLETED, 1)
 
-    with pytest.raises(TransitionRejectedError):
+    with pytest.raises(TransitionRejectedError) as error:
         await transition_task(uow_factory, clock, ids, task_id, TaskStatus.COMPLETED, 2)
 
+    assert "allowed next statuses: planned" in error.value.message
     assert store.tasks[task_id].version == 2
     assert store.tasks[task_id].task.status is TaskStatus.COMPLETED
     assert len(store.events[task_id]) == 1
