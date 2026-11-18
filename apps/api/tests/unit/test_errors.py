@@ -50,6 +50,7 @@ async def test_unknown_route_returns_problem_json(
     assert body["status"] == 404
     assert body["detail"]
     assert body["code"] == "not_found"
+    assert body["result"] == "not_found"
 
 
 async def test_validation_failure_returns_validation_failed(
@@ -66,6 +67,7 @@ async def test_validation_failure_returns_validation_failed(
     assert body["status"] == 422
     assert body["detail"] == "Request validation failed."
     assert body["code"] == "validation_failed"
+    assert body["result"] == "validation_failed"
     assert "not-a-number" not in response.text
 
 
@@ -85,5 +87,6 @@ async def test_unhandled_error_is_generic_and_logged(
     assert body["type"] == "urn:lifespace:problem:failed"
     assert body["detail"] == "Internal server error"
     assert body["code"] == "failed"
+    assert body["result"] == "failed"
     assert "secret internal detail" not in response.text
     assert "secret internal detail" in caplog.text
