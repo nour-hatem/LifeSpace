@@ -38,12 +38,14 @@ The coding agent implements the current task only, never another milestone.
 ## Layer dependency rules
 
 - The `domain` package (present) imports no framework, database, HTTP, or model SDK.
-- `application` imports `domain` only and reaches infrastructure through ports.
-- `infrastructure` implements ports; it never imports `api` or `ai`.
-- `api` calls `application`; it never imports `infrastructure` or SQLAlchemy.
+- `application` (present) imports `domain` only and reaches infrastructure through ports.
+- `infrastructure` (present) implements ports; it never imports `api` or `ai`.
+- `api` (present) calls `application`; it never imports `infrastructure` or SQLAlchemy.
 - `ai` calls `application` through its tool allowlist; it never imports
   `infrastructure`, `api`, FastAPI, or SQLAlchemy.
-- `lifespace.main` is the composition root.
+- `lifespace.main` and `lifespace.openapi_export` are the composition roots.
+
+The application and persistence layers exist: use cases, PostgreSQL repositories, a unit of work, and the task API.
 
 Import-linter enforces the contracts that exist. Run `make api-lint`.
 
@@ -75,25 +77,25 @@ make dev-web    # web app on 127.0.0.1:5173
 make test       # backend and frontend tests
 make check      # lint, typecheck, test, build
 make smoke      # running servers and the Vite proxy
+make api-spec   # export the OpenAPI document to the web app
+make api-spec-check api-types-check  # fail on stale generated files
+make api-types  # regenerate the committed TypeScript types
 make db-down    # stop the database, keep data
 make db-reset   # delete local data and recreate the database
 ```
 
 ## Testing rules
 
-- `pytest` runs with `filterwarnings = error`. Fix warnings; never silence them
-  broadly.
+- `pytest` runs with `filterwarnings = error`. Fix warnings; never silence them broadly.
 - API tests use `httpx.AsyncClient` with `ASGITransport`. The Starlette
   `TestClient` is deprecated and not used.
-- Run the application lifespan in HTTP tests and dispose every engine.
-- Unit tests need no database. Integration tests need `make db-up` and must fail,
-  never skip, when PostgreSQL is unreachable.
+- Run the application lifespan in HTTP tests and dispose every engine. Unit tests
+  need no database; integration tests need `make db-up` and must fail, never skip.
 - Frontend tests use Vitest with Testing Library and mock `fetch`.
 
 ## Secrets and safety
 
-- Never commit `.env`, credentials, tokens, or private keys. `.env.example`
-  documents every local-only variable.
+- Never commit `.env`, credentials, tokens, or private keys. `.env.example` documents every local-only variable.
 - Never log database URLs, passwords, request bodies, or user content.
 - Error responses never include stack traces or internal details.
 
@@ -102,8 +104,7 @@ make db-reset   # delete local data and recreate the database
 - Do not make product decisions. Authentication, accounts, and tenancy are not
   approved and must not be added.
 - Branch per task as `m<milestone>/<slug>`. Never commit to `main`.
-- Use conventional commits. Do not push, merge, or rewrite history without the
-  owner.
+- Use conventional commits. Do not push, merge, or rewrite history without the owner.
 - Finish with a clean `git status`.
 
 ## Context budget
@@ -115,6 +116,5 @@ make db-reset   # delete local data and recreate the database
 
 ## Final report
 
-End every task with: part and result, commits (`git log --oneline main..HEAD`),
-each verification command and its result, deviations and why, and notes for the
-next part.
+End every task with: part and result, commits (`git log --oneline main..HEAD`), each verification command and its result,
+deviations and why, and notes for the next part.

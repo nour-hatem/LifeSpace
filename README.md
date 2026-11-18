@@ -4,7 +4,7 @@
 
 LifeSpace is an AI-powered personal productivity environment. Users describe their commitments in natural language, and LifeSpace turns them into structured tasks, schedules, and projects shown through an interactive 2D spatial workspace instead of a conventional task dashboard.
 
-> **Project status:** Foundation (M0) is implemented: a local single-user FastAPI backend, a React frontend, PostgreSQL 18 in Docker, a migration baseline, and quality tooling. There are no product features yet. The next milestone is M1 (domain core).
+> **Project status:** Foundation (M0), the domain core (M1), and persistence and the task API (M2) are implemented: a local single-user FastAPI backend with the pure domain, application use cases, PostgreSQL persistence, and the versioned task API. The next milestone is M3 (design system and My Space).
 
 ## Core principles
 
@@ -26,6 +26,25 @@ LifeSpace is an AI-powered personal productivity environment. Users describe the
 | Memory Garden | Visual history of completed work | Later |
 
 Release scope is defined in `docs/product/PRD.md`.
+
+## Task API (M2)
+
+The backend exposes a REST API under `/api/v1`, with RFC 9457 problem+json
+errors, optimistic concurrency through a `version` field, idempotent task
+creation, and cursor pagination. The OpenAPI document is committed and the
+TypeScript types in `apps/web/src/shared/api/` are generated from it, so a
+drift check can fail a stale contract.
+
+| Method and path | Purpose | Success |
+|---|---|---|
+| `GET /api/v1/tasks` | List tasks, filtered by status, category, and priority | 200 |
+| `POST /api/v1/tasks` | Create a manual task (optionally idempotent) | 201 |
+| `GET /api/v1/tasks/{id}` | Read one task with its computed overdue flag | 200 |
+| `PATCH /api/v1/tasks/{id}` | Edit fields; null clears an optional field | 200 |
+| `DELETE /api/v1/tasks/{id}?version=N` | Soft delete at the expected version | 204 |
+| `POST /api/v1/tasks/{id}/start|plan|complete|cancel|reopen` | Lifecycle actions | 200 |
+| `GET /api/v1/tasks/{id}/history` | Status history, newest first | 200 |
+| `GET /api/v1/settings`, `PUT /api/v1/settings` | Read or change the user's time zone | 200 |
 
 ## Documentation
 
@@ -55,7 +74,7 @@ lifespace/
 └── scripts/         doctor.sh and smoke.sh
 ```
 
-The layout follows section 5 of the technical blueprint. Later milestones add `domain/`, `application/`, and `ai/` to the API and features, a router, and a design system to the web app.
+The layout follows section 5 of the technical blueprint. The API already contains the `domain`, `application`, `api`, and `infrastructure` layers; later milestones add `ai` to the API and features, a router, and a design system to the web app.
 
 ## Development workflow
 
