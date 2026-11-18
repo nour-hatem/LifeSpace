@@ -1,7 +1,7 @@
 """Health and readiness endpoints.
 
 This module only answers HTTP health probes and reads the readiness callable
-from the application state. It must not import ``lifespace.infrastructure`` or
+from the application state. It must not import the infrastructure layer or
 SQLAlchemy, and it never exposes exception text or connection details.
 """
 
