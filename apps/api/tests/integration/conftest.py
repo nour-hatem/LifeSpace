@@ -66,3 +66,25 @@ def run_alembic(url: str, *arguments: str) -> subprocess.CompletedProcess[str]:
         text=True,
         check=False,
     )
+
+
+def reset_database(url: str) -> None:
+    """Empty the M2 tables and restore the single UTC settings row."""
+    from sqlalchemy import text
+
+    from lifespace.infrastructure.db import create_engine
+
+    async def run() -> None:
+        engine = create_engine(url)
+        try:
+            async with engine.begin() as connection:
+                for statement in [
+                    "truncate table tasks, task_status_events, idempotency_keys cascade",
+                    "delete from app_settings",
+                    "insert into app_settings (id, timezone, updated_at) values (1, 'UTC', now())",
+                ]:
+                    await connection.execute(text(statement))
+        finally:
+            await engine.dispose()
+
+    asyncio.run(run())
