@@ -8,7 +8,8 @@ WEB := apps/web
 
 .PHONY: help setup lint format typecheck test build check smoke \
 	doctor env db-up db-down db-reset lock api-setup api-lint api-format \
-	api-typecheck api-test migrate migrate-down dev-api web-setup web-lint \
+	api-typecheck api-test api-spec api-spec-check api-types api-types-check \
+	migrate migrate-down dev-api web-setup web-lint \
 	web-format web-typecheck web-test web-build dev-web
 
 help: ## List available targets
@@ -54,10 +55,36 @@ lock: ## Resolve and lock Python dependencies
 api-setup: ## Install backend dependencies from the lockfile
 	uv sync --project "$(API)" --locked
 
-api-lint: ## Lint and format-check the backend, and check layer contracts
+api-lint: api-spec-check ## Lint and format-check the backend, and check layer contracts
 	cd "$(API)" && uv run ruff check .
 	cd "$(API)" && uv run ruff format --check .
 	cd "$(API)" && uv run lint-imports
+
+api-spec: ## Export the OpenAPI document to apps/web/src/shared/api/openapi.json
+	uv run --project "$(API)" python -m lifespace.openapi_export "$(WEB)/src/shared/api/openapi.json"
+
+api-spec-check: ## Fail when the committed OpenAPI document is stale
+	@set -e; \
+	tmp=$$(mktemp); \
+	trap 'rm -f "$$tmp"' EXIT; \
+	uv run --project "$(API)" python -m lifespace.openapi_export "$$tmp"; \
+	if ! diff -u "$(WEB)/src/shared/api/openapi.json" "$$tmp"; then \
+		echo "OpenAPI spec is out of date. Run: make api-types"; \
+		exit 1; \
+	fi
+
+api-types: api-spec ## Generate TypeScript types from the OpenAPI document
+	cd "$(WEB)" && env -u NODE_ENV npx --yes openapi-typescript@7.13.0 src/shared/api/openapi.json -o src/shared/api/schema.d.ts
+
+api-types-check: ## Fail when the committed TypeScript types are stale
+	@set -e; \
+	tmp=$$(mktemp --suffix=.d.ts); \
+	trap 'rm -f "$$tmp"' EXIT; \
+	cd "$(WEB)" && env -u NODE_ENV npx --yes openapi-typescript@7.13.0 src/shared/api/openapi.json -o "$$tmp"; \
+	if ! diff -u src/shared/api/schema.d.ts "$$tmp"; then \
+		echo "Types are out of date. Run: make api-types"; \
+		exit 1; \
+	fi
 
 api-format: ## Format the backend with ruff
 	cd "$(API)" && uv run ruff format .

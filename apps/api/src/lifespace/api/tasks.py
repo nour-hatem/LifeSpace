@@ -62,7 +62,7 @@ CREATE_RESPONSES: dict[int | str, dict[str, Any]] = {
     **PROBLEM_RESPONSES,
     200: {
         "description": "The original task for a replayed idempotency key",
-        "content": {"application/json": {"schema": TaskOut.model_json_schema()}},
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/TaskOut"}}},
     },
 }
 
