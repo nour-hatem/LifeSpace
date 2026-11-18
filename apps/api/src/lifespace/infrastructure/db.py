@@ -8,7 +8,12 @@ import asyncio
 import logging
 
 from sqlalchemy import MetaData, text
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +33,11 @@ metadata = MetaData(naming_convention=NAMING_CONVENTION)
 def create_engine(url: str) -> AsyncEngine:
     """Create the async engine for the given SQLAlchemy URL."""
     return create_async_engine(url, pool_pre_ping=True)
+
+
+def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+    """Create sessions that keep their loaded values after a commit (ADR 0002 item 2)."""
+    return async_sessionmaker(engine, expire_on_commit=False)
 
 
 async def check_database(engine: AsyncEngine) -> bool:
