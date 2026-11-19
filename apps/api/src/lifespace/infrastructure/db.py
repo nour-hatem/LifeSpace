@@ -7,7 +7,8 @@ and it must never log connection URLs or credentials.
 import asyncio
 import logging
 
-from sqlalchemy import MetaData, text
+from sqlalchemy import MetaData, event, text
+from sqlalchemy.engine import ExceptionContext
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -16,6 +17,8 @@ from sqlalchemy.ext.asyncio import (
 )
 
 logger = logging.getLogger(__name__)
+
+_DETAIL_SEPARATOR = "\nDETAIL:"
 
 READINESS_TIMEOUT_SECONDS = 3.0
 
@@ -30,9 +33,36 @@ NAMING_CONVENTION = {
 metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
 
+class _RedactedDatabaseError(Exception):
+    """A database error whose message omits PostgreSQL row values (ADR 0002 item 23)."""
+
+
+def _sanitize_database_error(context: ExceptionContext) -> None:
+    """Remove PostgreSQL row values from a database error (ADR 0002 item 23).
+
+    PostgreSQL appends a ``DETAIL`` line with the failing row, which can contain
+    task content. The SQLAlchemy wrapper copies the original message into its
+    arguments before this event runs, so both the wrapper message and ``orig``
+    are reduced to the part before ``DETAIL``. The constraint name is kept so
+    callers can still classify the error.
+    """
+    wrapped = context.sqlalchemy_exception
+    if wrapped is None or not wrapped.args or not isinstance(wrapped.args[0], str):
+        return
+    message = wrapped.args[0]
+    if _DETAIL_SEPARATOR not in message:
+        return
+    wrapped.args = (message.split(_DETAIL_SEPARATOR, 1)[0],)
+    if wrapped.orig is not None:
+        original = str(wrapped.orig).split(_DETAIL_SEPARATOR, 1)[0]
+        wrapped.orig = _RedactedDatabaseError(original)
+
+
 def create_engine(url: str) -> AsyncEngine:
     """Create the async engine, hiding statement parameters in errors (ADR 0002 item 23)."""
-    return create_async_engine(url, pool_pre_ping=True, hide_parameters=True)
+    engine = create_async_engine(url, pool_pre_ping=True, hide_parameters=True)
+    event.listen(engine.sync_engine, "handle_error", _sanitize_database_error)
+    return engine
 
 
 def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
