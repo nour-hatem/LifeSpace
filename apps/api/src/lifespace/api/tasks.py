@@ -39,6 +39,7 @@ from lifespace.application import settings as settings_use_cases
 from lifespace.application import tasks as task_use_cases
 from lifespace.application.models import IdempotencyInput, TaskFilter
 from lifespace.application.ports import Clock, IdGenerator, UnitOfWorkFactory
+from lifespace.domain.limits import MAX_INT32
 from lifespace.domain.task import Category, Priority, TaskStatus
 
 router = APIRouter(prefix="/api/v1")
@@ -199,7 +200,7 @@ async def patch_task(
 )
 async def delete_task(
     task_id: UUID,
-    version: Annotated[int, Query(ge=1)],
+    version: Annotated[int, Query(ge=1, le=MAX_INT32)],
     uow_factory: UowFactoryDep,
     clock: ClockDep,
 ) -> Response:

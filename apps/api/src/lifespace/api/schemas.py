@@ -13,7 +13,10 @@ from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StrictStr
 
+from lifespace.domain.limits import MAX_INT32
 from lifespace.domain.task import Category, Priority, TaskSource, TaskStatus
+
+Int32Field = Annotated[int, Field(strict=True, ge=1, le=MAX_INT32)]
 
 
 class _RequestModel(BaseModel):
@@ -54,7 +57,7 @@ class TaskCreate(_RequestModel):
     description: StrictStr | None = None
     category: Category | None = None
     priority: Priority | None = None
-    estimate_minutes: Annotated[int, Field(strict=True)] | None = None
+    estimate_minutes: Int32Field | None = None
     deadline: DeadlineField | None = None
     scheduled: IntervalSchema | None = None
     status: Literal["inbox", "planned"] = "planned"
@@ -63,12 +66,12 @@ class TaskCreate(_RequestModel):
 class TaskPatch(_RequestModel):
     """A partial edit; ``model_fields_set`` separates omitted from null (ADR 0002 item 10)."""
 
-    version: Annotated[int, Field(strict=True, ge=1)]
+    version: Int32Field
     title: StrictStr | None = None
     description: StrictStr | None = None
     category: Category | None = None
     priority: Priority | None = None
-    estimate_minutes: Annotated[int, Field(strict=True)] | None = None
+    estimate_minutes: Int32Field | None = None
     deadline: DeadlineField | None = None
     scheduled: IntervalSchema | None = None
 
@@ -76,13 +79,13 @@ class TaskPatch(_RequestModel):
 class ActionBody(_RequestModel):
     """A lifecycle action carrying the expected version (ADR 0002 item 11)."""
 
-    version: Annotated[int, Field(strict=True, ge=1)]
+    version: Int32Field
 
 
 class CancelBody(_RequestModel):
     """A cancel action with an optional reason (ADR 0002 item 11)."""
 
-    version: Annotated[int, Field(strict=True, ge=1)]
+    version: Int32Field
     reason: StrictStr | None = None
 
 
