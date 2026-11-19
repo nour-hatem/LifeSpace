@@ -31,8 +31,8 @@ metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
 
 def create_engine(url: str) -> AsyncEngine:
-    """Create the async engine for the given SQLAlchemy URL."""
-    return create_async_engine(url, pool_pre_ping=True)
+    """Create the async engine, hiding statement parameters in errors (ADR 0002 item 23)."""
+    return create_async_engine(url, pool_pre_ping=True, hide_parameters=True)
 
 
 def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:

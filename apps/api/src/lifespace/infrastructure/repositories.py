@@ -24,9 +24,10 @@ from lifespace.application.models import (
     StoredTask,
     TaskFilter,
 )
+from lifespace.domain.errors import DomainValidationError
 from lifespace.domain.lifecycle import StatusEvent
 from lifespace.domain.task import Task
-from lifespace.domain.time import as_instant
+from lifespace.domain.time import as_instant, ensure_instant_in_range
 from lifespace.infrastructure.cursor import decode_cursor, encode_cursor
 from lifespace.infrastructure.mapping import (
     event_to_values,
@@ -48,16 +49,26 @@ def _encode_keyset(instant: datetime, item_id: UUID) -> str:
 
 
 def _decode_keyset(cursor: str) -> tuple[datetime, UUID]:
-    """Decode a cursor into its instant and identifier, or raise ``InvalidCursorError``."""
+    """Decode a cursor into its instant and identifier (ADR 0002 item 24).
+
+    A non-ISO instant, a naive instant, an instant outside the supported range,
+    a bad UUID, or an overflowing UTC conversion is ``InvalidCursorError``,
+    never a 500 (ADR 0002 item 24).
+    """
     instant_text, id_text = decode_cursor(cursor, 2)
     try:
         instant = datetime.fromisoformat(instant_text)
         item_id = UUID(id_text)
-    except ValueError as error:
+    except (ValueError, TypeError) as error:
         raise InvalidCursorError("the cursor is invalid") from error
     if instant.tzinfo is None or instant.utcoffset() is None:
         raise InvalidCursorError("the cursor is invalid")
-    return as_instant(instant), item_id
+    try:
+        normalized = as_instant(instant)
+        ensure_instant_in_range(normalized, field="instant")
+    except (DomainValidationError, OverflowError) as error:
+        raise InvalidCursorError("the cursor is invalid") from error
+    return normalized, item_id
 
 
 def _task_conditions(task_filter: TaskFilter) -> list[ColumnElement[bool]]:

@@ -21,12 +21,17 @@ def encode_cursor(values: Sequence[str]) -> str:
 
 
 def decode_cursor(cursor: str, expected_parts: int) -> list[str]:
-    """Decode a cursor and require exactly ``expected_parts`` string values (ADR 0002 item 15)."""
+    """Decode a cursor and require exactly ``expected_parts`` string values (ADR 0002 item 24).
+
+    Decoding is total: deeply nested JSON, non-ASCII input, invalid base64, and
+    any other malformed payload raise ``InvalidCursorError`` rather than a
+    lower level exception (ADR 0002 item 24).
+    """
     try:
         padded = cursor + "=" * (-len(cursor) % 4)
         payload = base64.b64decode(padded.encode("ascii"), altchars=b"-_", validate=True)
         values = json.loads(payload)
-    except (ValueError, UnicodeError, binascii.Error) as error:
+    except (ValueError, UnicodeError, binascii.Error, RecursionError, OverflowError) as error:
         raise InvalidCursorError("the cursor is invalid") from error
     if (
         not isinstance(values, list)
