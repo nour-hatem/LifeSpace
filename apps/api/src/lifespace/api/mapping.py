@@ -48,9 +48,10 @@ def deadline_from_schema(
     """Build a domain deadline from its tagged representation (ADR 0002 item 10)."""
     if schema is None:
         return None
-    if isinstance(schema, DateDeadlineSchema):
-        return DateDeadline(day=schema.value)
-    return DateTimeDeadline(at=schema.value)
+    with translate_domain_errors():
+        if isinstance(schema, DateDeadlineSchema):
+            return DateDeadline(day=schema.value)
+        return DateTimeDeadline(at=schema.value)
 
 
 def interval_from_schema(schema: IntervalSchema | None) -> TimeInterval | None:
