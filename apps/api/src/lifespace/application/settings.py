@@ -35,9 +35,19 @@ async def update_timezone(
 
 
 def _ensure_timezone(timezone: str) -> None:
-    """Reject an empty, traversal, or unknown zone name (ADR 0002 item 8)."""
+    """Reject an empty, traversal, oversized, or unknown zone name (ADR 0002 item 8)."""
     if not timezone:
         raise ValidationFailedError("timezone must not be empty", field="timezone")
+    if len(timezone) > 64:
+        raise ValidationFailedError(
+            "timezone must be at most 64 characters",
+            field="timezone",
+        )
+    if "\x00" in timezone:
+        raise ValidationFailedError(
+            "timezone must not contain the NUL character",
+            field="timezone",
+        )
     if ".." in timezone or timezone.startswith("/") or "\\" in timezone:
         raise ValidationFailedError(
             "timezone must be an IANA time zone name without a path traversal",

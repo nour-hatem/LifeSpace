@@ -29,6 +29,7 @@ from lifespace.application.models import (
 from lifespace.application.ports import Clock, IdGenerator, UnitOfWorkFactory
 from lifespace.domain import lifecycle as domain_lifecycle
 from lifespace.domain import task as domain_task
+from lifespace.domain.limits import MAX_INT32
 from lifespace.domain.overdue import is_overdue
 from lifespace.domain.task import Task, TaskStatus, Unset
 
@@ -82,8 +83,9 @@ async def create_task(
         if idempotency is None:
             task = _build_task(ids, now, command)
             stored = await uow.tasks.add(task)
+            view = _to_view(stored, now, timezone)
             await uow.commit()
-            return CreateResult(view=_to_view(stored, now, timezone), replayed=False)
+            return CreateResult(view=view, replayed=False)
 
         record = await uow.idempotency.get(idempotency.key)
         if record is not None:
@@ -108,8 +110,9 @@ async def create_task(
             ),
             now=now,
         )
+        view = _to_view(stored, now, timezone)
         await uow.commit()
-        return CreateResult(view=_to_view(stored, now, timezone), replayed=False)
+        return CreateResult(view=view, replayed=False)
 
 
 async def get_task(uow_factory: UnitOfWorkFactory, clock: Clock, task_id: UUID) -> TaskView:
@@ -161,6 +164,20 @@ def _existing(stored: StoredTask | None, task_id: UUID) -> StoredTask:
     return stored
 
 
+def _check_version(expected_version: int) -> None:
+    """Reject a version the database cannot store before any database access (ADR 0002 item 20)."""
+    if (
+        isinstance(expected_version, bool)
+        or not isinstance(expected_version, int)
+        or expected_version < 1
+        or expected_version > MAX_INT32
+    ):
+        raise ValidationFailedError(
+            "version must be between 1 and 2147483647",
+            field="version",
+        )
+
+
 def _require_version(stored: StoredTask, expected_version: int) -> None:
     """Raise ``StaleVersionError`` when the caller's version is out of date (ADR 0002 item 4)."""
     if stored.version != expected_version:
@@ -186,8 +203,10 @@ async def edit_task(
     the task is out of date gets ``StaleVersionError`` even when the edit would
     also be rejected, because the domain verdict on an outdated snapshot may be
     meaningless (ADR 0002 item 4). ``UNSET`` fields are left unchanged and
-    ``None`` clears an optional field (ADR 0001 item 12).
+    ``None`` clears an optional field (ADR 0001 item 12). A version outside the
+    storable range is rejected before any database access (ADR 0002 item 20).
     """
+    _check_version(expected_version)
     now = clock.now()
     async with uow_factory() as uow:
         timezone = await uow.settings.get_timezone()
@@ -208,8 +227,9 @@ async def edit_task(
                 scheduled=changes.scheduled,
             )
         saved = await uow.tasks.save(edited, expected_version=expected_version)
+        view = _to_view(saved, now, timezone)
         await uow.commit()
-        return _to_view(saved, now, timezone)
+        return view
 
 
 async def delete_task(
@@ -221,8 +241,11 @@ async def delete_task(
     """Soft delete a task after the version check (ADR 0002 items 4 and 5).
 
     A missing or already deleted task raises ``NotFoundError`` and an outdated
-    version raises ``StaleVersionError``; both write nothing.
+    version raises ``StaleVersionError``; both write nothing. A version outside
+    the storable range is rejected before any database access (ADR 0002 item
+    20).
     """
+    _check_version(expected_version)
     now = clock.now()
     async with uow_factory() as uow:
         await uow.tasks.soft_delete(task_id, expected_version=expected_version, now=now)
@@ -245,8 +268,11 @@ async def transition_task(
     out of date (ADR 0002 item 4). The domain decides which transitions are
     legal and rejects the rest with ``TransitionRejectedError`` (ADR 0001 item
     6). The new task and its event are written and committed together, so a
-    failure in either leaves neither stored (ADR 0002 item 6).
+    failure in either leaves neither stored (ADR 0002 item 6). A version
+    outside the storable range is rejected before any database access (ADR
+    0002 item 20).
     """
+    _check_version(expected_version)
     now = clock.now()
     async with uow_factory() as uow:
         timezone = await uow.settings.get_timezone()
@@ -261,8 +287,9 @@ async def transition_task(
             )
         saved = await uow.tasks.save(result.task, expected_version=expected_version)
         await uow.tasks.add_event(ids.new_id(), result.event)
+        view = _to_view(saved, now, timezone)
         await uow.commit()
-        return _to_view(saved, now, timezone)
+        return view
 
 
 async def list_task_events(
