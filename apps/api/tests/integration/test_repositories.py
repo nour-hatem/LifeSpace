@@ -597,6 +597,43 @@ async def test_an_event_requires_an_existing_task(uow_factory: UnitOfWorkFactory
             await uow.tasks.add_event(uuid7(), event)
 
 
+async def test_database_errors_hide_statement_parameters(engine: AsyncEngine) -> None:
+    """Database errors never put task content into logs (ADR 0002 item 23)."""
+    marker = "SECRET-MARKER-12345"
+    with pytest.raises(IntegrityError) as error:
+        async with engine.begin() as connection:
+            await connection.execute(
+                text(
+                    "insert into tasks "
+                    "(id, title, description, status, source, created_at, updated_at, version) "
+                    "values (:id, :title, :description, 'planned', 'manual', now(), now(), 1)"
+                ),
+                {"id": uuid7(), "title": "   ", "description": marker},
+            )
+
+    assert marker not in str(error.value)
+
+
+async def test_maximum_length_text_round_trips(uow_factory: UnitOfWorkFactory) -> None:
+    """A 500 character title and a 20,000 character description round trip (ADR 0002 item 20)."""
+    title = "اكتب📝" * 100
+    description = "وصف📝" * 5000
+    assert len(title) == 500
+    assert len(description) == 20_000
+    task = _new_task(title=title, description=description)
+
+    async with uow_factory() as uow:
+        await uow.tasks.add(task)
+        await uow.commit()
+
+    async with uow_factory() as uow:
+        loaded = await uow.tasks.get(task.id)
+
+    assert loaded is not None
+    assert loaded.task.title == title
+    assert loaded.task.description == description
+
+
 async def test_the_use_cases_run_end_to_end(uow_factory: UnitOfWorkFactory) -> None:
     """Create, replay, edit, transition, list, and delete through the real adapters."""
     clock = SystemClock()
