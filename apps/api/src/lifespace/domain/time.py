@@ -7,6 +7,7 @@ from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from lifespace.domain.errors import DomainValidationError
+from lifespace.domain.limits import MAX_INSTANT, MIN_INSTANT
 
 
 def ensure_aware(value: datetime, *, field: str) -> datetime:
@@ -20,16 +21,42 @@ def ensure_aware(value: datetime, *, field: str) -> datetime:
     return value
 
 
-def as_instant(value: datetime) -> datetime:
+def as_instant(value: datetime, *, field: str = "value") -> datetime:
     """Return ``value`` as a UTC instant (ADR 0001 item 19).
 
     Python compares and subtracts two aware datetimes that share the same
     ``tzinfo`` object by their wall-clock fields, ignoring the UTC offset and
     the ``fold``. Every comparison and subtraction in the domain therefore goes
     through this function, which converts with ``astimezone(UTC)``. A naive
-    value is rejected with ``DomainValidationError`` (ADR 0001 item 14).
+    value is rejected with ``DomainValidationError`` (ADR 0001 item 14), and an
+    instant whose UTC conversion overflows is a validation failure rather than
+    an ``OverflowError`` (ADR 0002 item 21).
     """
-    return ensure_aware(value, field="value").astimezone(UTC)
+    aware = ensure_aware(value, field=field)
+    try:
+        return aware.astimezone(UTC)
+    except OverflowError as error:
+        raise DomainValidationError(
+            f"{field} is outside the supported range",
+            field=field,
+        ) from error
+
+
+def ensure_instant_in_range(value: datetime, *, field: str) -> datetime:
+    """Return ``value`` when its UTC instant is in the supported range (ADR 0002 item 20).
+
+    The supported range is ``MIN_INSTANT <= instant < MAX_INSTANT``. A naive
+    value or an instant outside that range raises ``DomainValidationError``, and
+    an overflowing UTC conversion never escapes as ``OverflowError`` (ADR 0002
+    item 21).
+    """
+    instant = as_instant(value, field=field)
+    if not MIN_INSTANT <= instant < MAX_INSTANT:
+        raise DomainValidationError(
+            f"{field} is outside the supported range",
+            field=field,
+        )
+    return value
 
 
 def local_date(instant: datetime, tz: ZoneInfo) -> date:
@@ -64,9 +91,9 @@ class TimeInterval:
     end: datetime
 
     def __post_init__(self) -> None:
-        """Validate the bounds and their order (ADR 0001 items 13 and 14)."""
-        ensure_aware(self.start, field="start")
-        ensure_aware(self.end, field="end")
+        """Validate the bounds, range, and order (ADR 0001 item 13; ADR 0002 item 20)."""
+        ensure_instant_in_range(self.start, field="start")
+        ensure_instant_in_range(self.end, field="end")
         start_instant, end_instant = self._instant_key()
         if end_instant <= start_instant:
             raise DomainValidationError("end must be strictly after start", field="end")

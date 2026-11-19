@@ -12,7 +12,14 @@ from uuid import UUID
 
 from lifespace.domain.deadline import Deadline
 from lifespace.domain.errors import DomainValidationError
-from lifespace.domain.time import TimeInterval, as_instant, ensure_aware
+from lifespace.domain.limits import (
+    MAX_DESCRIPTION_LENGTH,
+    MAX_INT32,
+    MAX_REASON_LENGTH,
+    MAX_TITLE_LENGTH,
+    ensure_text,
+)
+from lifespace.domain.time import TimeInterval, as_instant, ensure_instant_in_range
 
 
 class TaskStatus(StrEnum):
@@ -114,13 +121,20 @@ class Task:
             raise DomainValidationError(
                 "title must not have leading or trailing whitespace", field="title"
             )
+        ensure_text(self.title, field="title", max_length=MAX_TITLE_LENGTH)
+        if self.description is not None:
+            ensure_text(
+                self.description,
+                field="description",
+                max_length=MAX_DESCRIPTION_LENGTH,
+            )
 
-        ensure_aware(self.created_at, field="created_at")
-        ensure_aware(self.updated_at, field="updated_at")
+        ensure_instant_in_range(self.created_at, field="created_at")
+        ensure_instant_in_range(self.updated_at, field="updated_at")
         if self.completed_at is not None:
-            ensure_aware(self.completed_at, field="completed_at")
+            ensure_instant_in_range(self.completed_at, field="completed_at")
         if self.canceled_at is not None:
-            ensure_aware(self.canceled_at, field="canceled_at")
+            ensure_instant_in_range(self.canceled_at, field="canceled_at")
         if as_instant(self.updated_at) < as_instant(self.created_at):
             raise DomainValidationError(
                 "updated_at must not be before created_at", field="updated_at"
@@ -136,6 +150,11 @@ class Task:
             if self.estimate_minutes <= 0:
                 raise DomainValidationError(
                     "estimate_minutes must be greater than zero", field="estimate_minutes"
+                )
+            if self.estimate_minutes > MAX_INT32:
+                raise DomainValidationError(
+                    "estimate_minutes must not exceed 2147483647",
+                    field="estimate_minutes",
                 )
 
         if (self.status is TaskStatus.COMPLETED) != (self.completed_at is not None):
@@ -159,6 +178,11 @@ class Task:
                 raise DomainValidationError(
                     "cancellation_reason must not be empty", field="cancellation_reason"
                 )
+            ensure_text(
+                self.cancellation_reason,
+                field="cancellation_reason",
+                max_length=MAX_REASON_LENGTH,
+            )
 
 
 def _normalize_description(description: str | None) -> str | None:
@@ -188,7 +212,7 @@ def create_task(
     completable task must be planned (ADR 0001 item 4). The title is stripped
     (ADR 0001 item 11), and ``created_at`` and ``updated_at`` both equal ``now``.
     """
-    ensure_aware(now, field="now")
+    ensure_instant_in_range(now, field="now")
     if status is not TaskStatus.INBOX and status is not TaskStatus.PLANNED:
         raise DomainValidationError(
             f"a task cannot be created with status {status!s}", field="status"
@@ -231,7 +255,7 @@ def edit_task(
     (ADR 0001 item 12). The ``now`` check compares UTC instants (ADR 0001
     item 19).
     """
-    ensure_aware(now, field="now")
+    ensure_instant_in_range(now, field="now")
     if as_instant(now) < as_instant(task.updated_at):
         raise DomainValidationError("now must not be before the task updated_at", field="now")
 

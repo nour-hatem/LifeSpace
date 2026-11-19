@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from lifespace.domain.time import as_instant, ensure_aware, start_of_local_day
+from lifespace.domain.limits import ensure_date_in_range
+from lifespace.domain.time import as_instant, ensure_instant_in_range, start_of_local_day
 
 
 @dataclass(frozen=True, slots=True)
@@ -14,6 +15,10 @@ class DateDeadline:
     """A deadline at the end of the local calendar day ``day`` (ADR 0001 item 2)."""
 
     day: date
+
+    def __post_init__(self) -> None:
+        """Reject a day outside the supported date range (ADR 0002 item 20)."""
+        ensure_date_in_range(self.day, field="day")
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,8 +28,8 @@ class DateTimeDeadline:
     at: datetime
 
     def __post_init__(self) -> None:
-        """Reject a naive instant (ADR 0001 item 14)."""
-        ensure_aware(self.at, field="at")
+        """Reject a naive or out of range instant (ADR 0001 item 14; ADR 0002 item 20)."""
+        ensure_instant_in_range(self.at, field="at")
 
 
 Deadline = DateDeadline | DateTimeDeadline
@@ -39,7 +44,7 @@ def is_deadline_passed(deadline: Deadline, now: datetime, tz: ZoneInfo) -> bool:
     are compared as UTC instants (ADR 0001 item 19), and ``now`` must be
     timezone-aware.
     """
-    ensure_aware(now, field="now")
+    ensure_instant_in_range(now, field="now")
     now_instant = as_instant(now)
     if isinstance(deadline, DateTimeDeadline):
         return now_instant > as_instant(deadline.at)

@@ -9,8 +9,9 @@ from types import MappingProxyType
 from uuid import UUID
 
 from lifespace.domain.errors import DomainValidationError, InvalidTransitionError
+from lifespace.domain.limits import MAX_REASON_LENGTH, ensure_text
 from lifespace.domain.task import Task, TaskStatus
-from lifespace.domain.time import TimeInterval, as_instant, ensure_aware
+from lifespace.domain.time import TimeInterval, as_instant, ensure_instant_in_range
 
 ALLOWED_TRANSITIONS: Mapping[TaskStatus, frozenset[TaskStatus]] = MappingProxyType(
     {
@@ -41,8 +42,8 @@ class StatusEvent:
     discarded_schedule: TimeInterval | None = None
 
     def __post_init__(self) -> None:
-        """Reject a naive event instant (ADR 0001 item 14)."""
-        ensure_aware(self.occurred_at, field="occurred_at")
+        """Reject a naive or out of range event instant (ADR 0001 item 14; ADR 0002 item 20)."""
+        ensure_instant_in_range(self.occurred_at, field="occurred_at")
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,7 +78,7 @@ def transition_task(
     already ended (ADR 0001 item 8). The input task is never mutated. The
     ``now`` and schedule checks compare UTC instants (ADR 0001 item 19).
     """
-    ensure_aware(now, field="now")
+    ensure_instant_in_range(now, field="now")
     if as_instant(now) < as_instant(task.updated_at):
         raise DomainValidationError("now must not be before the task updated_at", field="now")
 
@@ -90,6 +91,8 @@ def transition_task(
         )
 
     normalized_reason = _normalized_reason(reason)
+    if normalized_reason is not None:
+        ensure_text(normalized_reason, field="reason", max_length=MAX_REASON_LENGTH)
     completed_at = task.completed_at
     canceled_at = task.canceled_at
     cancellation_reason = task.cancellation_reason
