@@ -155,6 +155,26 @@ Lists use keyset pagination with an opaque base64url cursor. `limit` defaults to
 100 and accepts 1 to 200. Tasks are ordered by `created_at` and `id` descending;
 status events by `occurred_at` and `id` descending.
 
+### Input limits (ADR 0002 item 20)
+
+| Input | Rule |
+|---|---|
+| `estimate_minutes` | strict integer from 1 to 2,147,483,647 |
+| `version` (body or delete query) | strict integer from 1 to 2,147,483,647 |
+| `title` | 1 to 500 characters after trimming leading and trailing whitespace |
+| `description` | at most 20,000 characters after trimming; JSON `null` clears it |
+| cancel or transition `reason` | at most 1,000 characters after trimming |
+| text | no NUL character and no lone surrogate |
+| date-only deadline | 1970-01-01 to 2999-12-31 inclusive |
+| datetime deadline, schedule, and clock instant | 1970-01-01T00:00:00Z up to, but not including, 3000-01-01T00:00:00Z |
+| cursor instant | the same instant range; any malformed or out-of-range cursor is `invalid_cursor` |
+
+Numeric bounds live in the request schemas and are reported as the generic 422
+`validation_failed`. Text, character, date, and instant rules live in the domain
+(single source of truth) and are reported as 422 `validation_failed` with their
+`field`. Every violation is a `problem+json` 422 response, never a 500 (ADR 0002
+items 20, 21, and 24).
+
 The contract workflow keeps the generated files committed:
 
 ```bash

@@ -86,7 +86,7 @@ make db-reset   # delete local data and recreate the database
 
 ## Testing rules
 
-- `pytest` runs with `filterwarnings = error`. Fix warnings; never silence them broadly.
+- `pytest` runs with `filterwarnings = error`. Fix warnings; never silence them broadly. Bound every user input and include hostile inputs (NUL, lone surrogates, out-of-range numbers, dates, and cursors) in the tests; they must return 422, never 500.
 - API tests use `httpx.AsyncClient` with `ASGITransport`. The Starlette
   `TestClient` is deprecated and not used.
 - Run the application lifespan in HTTP tests and dispose every engine. Unit tests
