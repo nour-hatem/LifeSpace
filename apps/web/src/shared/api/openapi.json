@@ -6,6 +6,7 @@
         "description": "A lifecycle action carrying the expected version (ADR 0002 item 11).",
         "properties": {
           "version": {
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version",
             "type": "integer"
@@ -33,6 +34,7 @@
             "title": "Reason"
           },
           "version": {
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version",
             "type": "integer"
@@ -302,6 +304,8 @@
           "estimate_minutes": {
             "anyOf": [
               {
+                "maximum": 2147483647.0,
+                "minimum": 1.0,
                 "type": "integer"
               },
               {
@@ -603,6 +607,8 @@
           "estimate_minutes": {
             "anyOf": [
               {
+                "maximum": 2147483647.0,
+                "minimum": 1.0,
                 "type": "integer"
               },
               {
@@ -643,6 +649,7 @@
             "title": "Title"
           },
           "version": {
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Version",
             "type": "integer"
@@ -1853,6 +1860,7 @@
             "name": "version",
             "required": true,
             "schema": {
+              "maximum": 2147483647,
               "minimum": 1,
               "title": "Version",
               "type": "integer"
