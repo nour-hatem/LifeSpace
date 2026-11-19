@@ -23,9 +23,10 @@ from lifespace.application.ports import (
     SettingsRepository,
     TaskRepository,
 )
+from lifespace.domain.errors import DomainValidationError
 from lifespace.domain.lifecycle import StatusEvent
 from lifespace.domain.task import Task
-from lifespace.domain.time import as_instant
+from lifespace.domain.time import as_instant, ensure_instant_in_range
 
 
 class FakeClock:
@@ -69,15 +70,20 @@ def _decode_cursor(cursor: str) -> tuple[datetime, UUID]:
     """Decode a keyset position, raising ``InvalidCursorError`` when malformed."""
     instant_text, separator, id_text = cursor.partition("|")
     if not separator:
-        raise InvalidCursorError(f"the cursor {cursor!r} is not valid")
+        raise InvalidCursorError("the cursor is invalid")
     try:
         instant = datetime.fromisoformat(instant_text)
         item_id = UUID(id_text)
     except ValueError as error:
-        raise InvalidCursorError(f"the cursor {cursor!r} is not valid") from error
-    if instant.tzinfo is None:
-        raise InvalidCursorError(f"the cursor {cursor!r} is not valid")
-    return as_instant(instant), item_id
+        raise InvalidCursorError("the cursor is invalid") from error
+    if instant.tzinfo is None or instant.utcoffset() is None:
+        raise InvalidCursorError("the cursor is invalid")
+    try:
+        normalized = as_instant(instant)
+        ensure_instant_in_range(normalized, field="instant")
+    except (DomainValidationError, OverflowError) as error:
+        raise InvalidCursorError("the cursor is invalid") from error
+    return normalized, item_id
 
 
 def _task_key(stored: StoredTask) -> tuple[datetime, UUID]:
