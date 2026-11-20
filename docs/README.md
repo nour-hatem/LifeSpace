@@ -15,8 +15,7 @@ docs/
     ├── AGENT_SPEC.md
     ├── CLAUDE_INSTRUCTIONS.md
     ├── TECHNICAL_BLUEPRINT.md
-    ├── adr/
-    └── codex-prompts/
+    └── adr/
 ```
 
 Architecture decision records live in `engineering/adr/` (one file per decision: `0001-m1-domain-decisions.md`, `0002-m2-persistence-and-task-api.md`). A folder for review reports (`engineering/reviews/`) is created when the first report is written.
@@ -39,7 +38,6 @@ The six original specification files are preserved unchanged. They refer to each
 | Item | Purpose |
 |---|---|
 | [`engineering/TECHNICAL_BLUEPRINT.md`](engineering/TECHNICAL_BLUEPRINT.md) | Approved architecture, stack and versions, repository structure, conventions, roadmap, specification audit, and open product decisions |
-| [`engineering/codex-prompts/`](engineering/codex-prompts/) | Numbered implementation prompts issued to the coding agent |
 
 ## Document authority
 

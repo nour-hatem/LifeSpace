@@ -81,3 +81,9 @@ temp/
 .DS_Store
 Thumbs.db
 .hypothesis/
+
+# Agent workflow files that stay on this machine (never published)
+docs/engineering/codex-prompts/
+.opencode/
+.codex/
+.claude/

@@ -230,7 +230,7 @@ lifespace/
 
 Added by later milestones, only when they contain files: `domain/` and `application/` (M1), `ai/` (M7), `features/`, `design-system/`, and a router (M3).
 
-The repository path contains a space (`AI Factory`). Every script and Makefile recipe must quote paths.
+The repository path can contain spaces. Every script and Makefile recipe must quote paths.
 
 ---
 

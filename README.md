@@ -69,7 +69,7 @@ lifespace/
 ├── apps/
 │   ├── api/         FastAPI backend (uv project, Alembic migrations, tests)
 │   └── web/         React frontend (npm package, Vite, Vitest)
-├── docs/            Specifications, blueprint, implementation prompts
+├── docs/            Specifications, blueprint, decision records
 ├── infra/postgres/  Database init scripts
 └── scripts/         doctor.sh and smoke.sh
 ```
