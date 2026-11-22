@@ -51,19 +51,17 @@ Import-linter enforces the contracts that exist. Run `make api-lint`.
 
 ## Machine facts
 
-- The repository path contains a space. Quote every path in scripts and the
-  Makefile.
-- The login shell exports `NODE_ENV=production`. `apps/web/.npmrc` sets
-  `include=dev` and the npm scripts run with `env -u NODE_ENV`.
-- The project database is PostgreSQL 18 in Docker on `127.0.0.1:5433`. The host
-  PostgreSQL on port 5432 is never used.
-- Docker Desktop must run with the `desktop-linux` context. Do not change the
-  context or start/stop Docker Desktop unless the owner asks.
-- `uv` never downloads Python: every call uses `UV_PYTHON_DOWNLOADS=never` (the
-  Makefile exports it). Python dependencies live only in `apps/api/.venv`.
-- Never install, upgrade, or remove a global tool or package, and never use
-  sudo. pnpm is not installed and is not used.
-- If a command fails with `ENOSPC`, stop and report. Do not work around it.
+- EndeavourOS (Arch Linux), kernel 6.18, fish shell; plain `make` works in any shell. Quote every path (the repository path has spaces).
+- Node: default 26.13.1 with npm 12.2.3 (`/usr/bin/node`); nvm also has 22.22.3. Accept `^22.22.2`, `^24.15.0`, `>=26.0.0`.
+- The login shell exports `NODE_ENV=production`; `.npmrc` sets `include=dev` and npm scripts run with `env -u NODE_ENV`.
+- Docker Engine 29.10.0 with Compose 5.8.0 is a system service (`/var/run/docker.sock`,
+  user in the docker group); Docker Desktop is not installed. Use the `default`
+  context (`docker context use default` or `DOCKER_CONTEXT=default`); the dead
+  `desktop-linux` context still exists but is not used.
+- PostgreSQL 18 in Docker on `127.0.0.1:5433` (volume `lifespace_pgdata` kept); no host PostgreSQL or psql, and port 5432 is never used.
+- `uv` never downloads Python: every call uses `UV_PYTHON_DOWNLOADS=never`. Python 3.14.10, uv 0.13.9,
+  Git 2.56.1, GNU Make 4.4.1; Python dependencies live only in `apps/api/.venv`.
+- Never install, upgrade, or remove a global tool or package, and never use sudo. pnpm is not installed and is not used. If a command fails with `ENOSPC`, stop and report.
 
 ## Common commands
 

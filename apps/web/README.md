@@ -4,6 +4,15 @@ React single page application built with Vite and TypeScript. It calls the API
 on the same origin under `/api`; in development Vite proxies `/api` to the
 FastAPI process.
 
+## Prerequisites
+
+- **Node 22.22.2 or newer** in the accepted ranges `^22.22.2`, `^24.15.0`, or
+  `>=26.0.0` (verified on Node 22.22.3 and Node 26.13.1)
+- **npm 10 or 12**, installed with Node
+
+The root `README.md` lists the remaining tools (uv, Docker Engine or Docker
+Desktop, GNU Make).
+
 ## Commands
 
 Run inside `apps/web`, or use the equivalent `make web-*` target from the
@@ -59,9 +68,9 @@ without checking the constraints below.
 - **TypeScript 6.0.3, not 7.** `typescript-eslint` 8.72.2 requires TypeScript
   `>=4.8.4 <6.1.0`.
 - **ESLint 9.39.5, not 10.** `eslint-plugin-jsx-a11y` 6.10.2 supports ESLint 9
-  or lower.
-- **jsdom 31.0.0** requires Node 22.22.2 or newer, which is why `.nvmrc` pins
-  Node 22.22.3.
+  or lower. Do not upgrade ESLint or use overrides.
+- **jsdom 31.0.0** requires Node 22.22.2 or newer, which sets the lower bound of
+  the accepted Node ranges. `.nvmrc` pins Node 26.
 - **`NODE_ENV=production` is neutralized.** The login shell exports it, and npm
   would skip devDependencies. `.npmrc` sets `include=dev`, and the `dev`,
   `build`, `preview`, and `test` scripts run through `env -u NODE_ENV`, so the

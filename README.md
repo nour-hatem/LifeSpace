@@ -90,21 +90,22 @@ Every feature moves through product definition, technical planning, implementati
 
 ### Prerequisites
 
-- **Node 22.22.3** through nvm (the version in `.nvmrc`)
-- **npm 10.9.8**, installed with Node. pnpm is not installed and is not used.
-- **uv 0.11.28** for the isolated Python environment
-- **Docker Desktop** with Compose, which runs PostgreSQL 18
+- **Node 22.22.2 or newer** in the accepted ranges `^22.22.2`, `^24.15.0`, or `>=26.0.0` (verified on Node 22.22.3 and Node 26.13.1; `.nvmrc` pins Node 26)
+- **npm 10 or 12**, installed with Node. pnpm is not installed and is not used.
+- **uv** for the isolated Python environment
+- **Docker Engine or Docker Desktop** with Compose, which runs PostgreSQL 18
 - **GNU Make**
 
 ### One-time Docker preparation
 
-Start Docker Desktop, then select its context:
+Make sure a working Docker context is selected:
 
 ```bash
-docker context use desktop-linux
+docker context ls
+docker context use default   # Docker Engine
 ```
 
-`make doctor` fails when the Docker daemon is unreachable.
+On Docker Engine the user must be in the `docker` group. `make doctor` fails when the Docker daemon is unreachable.
 
 ### Disk space
 
@@ -140,7 +141,9 @@ The database is published only on `127.0.0.1:5433`. A host PostgreSQL service on
 
 | Symptom | Cause and fix |
 |---|---|
-| `docker info` or `make db-up` fails | Docker Desktop is not running. Start it and run `docker context use desktop-linux`. |
+| `docker info` or `make db-up` fails | Docker is not running or the wrong context is selected. On Docker Engine check `systemctl status docker` and run `docker context use default`; on Docker Desktop start the app. |
+| npm prints `EBADENGINE` warnings | Node is outside the accepted ranges (`^22.22.2`, `^24.15.0`, or `>=26.0.0`). Switch with `nvm use` or use the system Node. |
+| npm says ESLint 9 is no longer supported | Expected and tracked: `eslint-plugin-jsx-a11y` does not support ESLint 10 yet. Do not upgrade ESLint or use overrides. |
 | A port is in use (`5433`, `8000`, `5173`) | Another process owns it. Stop that process; `make doctor` lists the ports it checks. |
 | Writes fail with `ENOSPC` | Free space on the filesystem that holds the repository. At least 3 GB is required. |
 | npm skips devDependencies | The login shell exports `NODE_ENV=production`. `apps/web/.npmrc` sets `include=dev`, and every npm script runs through `env -u NODE_ENV`. |
