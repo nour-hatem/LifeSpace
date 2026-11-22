@@ -1,7 +1,7 @@
 # LifeSpace Technical Blueprint
 
 **Status:** Approved technical baseline v1.1. Technical decisions were delegated to the architect by the product owner on 2026-11-12. Product decisions remain with the product owner (section 20).
-**Revision:** v1.1 (2026-11-12). Adapted to the owner's actual local environment and a reduced first MVP: local single user, no authentication, no accounts.
+**Revision:** v1.2 (2026-11-22). Environment refresh for Node 26 and Docker Engine. Adapted to the owner's actual local environment and a reduced first MVP: local single user, no authentication, no accounts.
 **Author role:** Technical architect and reviewer
 **Inputs:** `docs/product/PRD.md`, `docs/business/BUSINESS_RULES.md`, `docs/product/USER_FLOWS.md`, `docs/engineering/AGENT_SPEC.md`, `docs/design/UI_UX_SPEC.md`, `docs/engineering/CLAUDE_INSTRUCTIONS.md`
 
@@ -43,11 +43,11 @@ The owner delegated technical decisions to the architect on 2026-11-12 and asked
 | # | Decision | Choice | Alternatives rejected and why |
 |---|---|---|---|
 | 1 | Architecture style | Modular monolith. One API process, one web app, one PostgreSQL database. Local, single user | Microservices (no scale or team driver). Serverless (poor local development) |
-| 2 | Backend framework | Python 3.14.4 with FastAPI 0.133.1 and Pydantic 2.13.4 | FastAPI 0.110.2 as installed: it runs correctly on Python 3.14 but pins Starlette 0.37.x, which has 14 known security advisories, and relies on `asyncio.iscoroutinefunction`, which Python 3.16 removes. Django, Litestar, NestJS, Flask (no gain over FastAPI for this product) |
-| 3 | Python runtime | The installed 3.14.4. uv never downloads another interpreter (`UV_PYTHON_DOWNLOADS=never`) | Installing 3.12 or 3.13 (unnecessary, every dependency supports 3.14) |
-| 4 | Database | PostgreSQL 18 in Docker Compose (`postgres:18`, verified 18.6), published on 127.0.0.1:5433 | Using the host PostgreSQL 18 service that already listens on 5432 (the project must not depend on or modify it). SQLite (weaker concurrency and timezone handling, and migrations would diverge from PostgreSQL). MongoDB (the domain is relational) |
+| 2 | Backend framework | Python 3.14.x with FastAPI 0.133.1 and Pydantic 2.13.4 | FastAPI 0.110.2 as installed: it runs correctly on Python 3.14 but pins Starlette 0.37.x, which has 14 known security advisories, and relies on `asyncio.iscoroutinefunction`, which Python 3.16 removes. Django, Litestar, NestJS, Flask (no gain over FastAPI for this product) |
+| 3 | Python runtime | The installed Python 3.14.x (verified on 3.14.4 and 3.14.10). uv never downloads another interpreter (`UV_PYTHON_DOWNLOADS=never`) | Installing 3.12 or 3.13 (unnecessary, every dependency supports 3.14) |
+| 4 | Database | PostgreSQL 18 in Docker Compose (`postgres:18`, verified 18.6), published on 127.0.0.1:5433 | a host installed PostgreSQL (the project must not depend on one). SQLite (weaker concurrency and timezone handling, and migrations would diverge from PostgreSQL). MongoDB (the domain is relational) |
 | 5 | Persistence | SQLAlchemy 2.0.50 async, asyncpg 0.31.0, Alembic 1.18.4 (all installed versions) | SQLAlchemy 2.1 and psycopg (not installed, no need). SQLModel (merges API and database models). Raw SQL only (no migration tooling) |
-| 6 | Frontend framework | React 19.3, TypeScript 6.0, Vite 8.3 SPA on Node 22.22.3 | TypeScript 7 (typescript-eslint 8.72 requires TypeScript below 6.1). Next.js, Remix (a second server runtime beside Python). Vue, Svelte, Angular |
+| 6 | Frontend framework | React 19.3, TypeScript 6.0, Vite 8.3 SPA on Node 22.22.2 or newer (verified on 22.22.3 and 26.13.1) | TypeScript 7 (typescript-eslint 8.72 requires TypeScript below 6.1). Next.js, Remix (a second server runtime beside Python). Vue, Svelte, Angular |
 | 7 | Routing | None in M0, a single page. React Router is added in M3 when a second view exists | Adding a router before it is needed |
 | 8 | Frontend state | TanStack Query for server state. Component state first. Zustand only when cross-component UI state appears (M3) | Redux Toolkit. Global store for server data |
 | 9 | Spatial rendering | DOM bubble elements in a CSS-transformed layer, SVG connectors, headless d3-force layout, Motion for transitions (all from M3) | Canvas, WebGL, PixiJS (lose native focus, text, and screen reader support). React Flow (graph editor semantics, reconsider for Project Universe) |
@@ -76,15 +76,14 @@ The owner delegated technical decisions to the architect on 2026-11-12 and asked
 
 | Component | Version | Role |
 |---|---|---|
-| Ubuntu | 26.04 LTS | Host |
-| Node.js (nvm) | 22.22.3 | Frontend tooling. Must stay at 22.22.2 or newer because jsdom 31 requires it |
-| npm | 10.9.8 | Frontend package manager |
-| Python | 3.14.4 | Backend runtime |
-| uv | 0.11.28 | Backend environment and lockfile |
-| Docker CLI and Docker Desktop | 29.7.2 and 4.85.0 | Runs PostgreSQL. Desktop must be running and the `desktop-linux` context selected |
-| Docker Compose | v5.3.1 | Local database definition |
-| GNU Make, Git, psql client | 4.4.1, 2.53.0, 18.6 | Tooling |
-| PostgreSQL server | `postgres:18` container (18.6 verified) | Application database. The host PostgreSQL service on port 5432 is not used |
+| Linux | Verified on Ubuntu 26.04 and EndeavourOS (kernel 6.18) | Host |
+| Node.js | 22.22.2 up to below 23, 24.15.0 up to below 25, or 26.0.0 or newer (verified on 22.22.3 and 26.13.1) | Frontend tooling. The lower bound comes from jsdom 31 |
+| npm | 10.9.8 and 12.2.3 (verified) | Frontend package manager |
+| Python | 3.14.x (verified on 3.14.4 and 3.14.10) | Backend runtime |
+| uv | 0.11.28 and 0.13.9 (verified) | Backend environment and lockfile |
+| Docker Engine 29.10.0 with Compose 5.8.0, or Docker Desktop | Verified on Engine 29.10.0 and Compose 5.8.0 | Runs PostgreSQL. On Docker Engine the context named `default` is used |
+| GNU Make and Git | GNU Make 4.4.1, Git 2.56.1 | Tooling |
+| PostgreSQL server | `postgres:18` container on 127.0.0.1:5433 | Application database. No PostgreSQL service on the host is required or used |
 
 Corepack is installed but not used. pnpm is not installed and is not used.
 
@@ -143,6 +142,7 @@ Added in later milestones: react-router (M3), zustand, motion, d3-force, Radix p
 9. **ESLint 10 conflicts with eslint-plugin-jsx-a11y 6.10.2** (peer range up to ESLint 9). Smallest change: ESLint 9.
 10. **With those two choices** npm installs 340 packages with no overrides, `tsc` reports 0 errors, ESLint 0, Vitest passes, `vite build` succeeds, and `npm audit` reports 0 vulnerabilities, all on Node 22.22.3 and npm 10.9.8.
 11. **Docker Compose runs PostgreSQL 18** from a project path that contains a space. The healthcheck passes, the init script creates `lifespace_test`, and the host reaches it on 127.0.0.1:5433.
+12. **Node 26.13.1 with npm 12.2.3 passes npm ci, lint, typecheck, the 6 Vitest tests, and the build with the same lockfile. npm 12 prints a deprecation warning for ESLint 9.39.5; it is expected, ESLint 10 stays blocked by eslint-plugin-jsx-a11y, and no override is used.**
 
 ### 3.5 Cost
 
@@ -194,7 +194,7 @@ lifespace/
 ├── .editorconfig
 ├── .env.example
 ├── .gitignore
-├── .nvmrc                          22.22.3
+├── .nvmrc                          26 (22.22.2 or newer also accepted)
 ├── AGENTS.md
 ├── Makefile
 ├── README.md
@@ -373,9 +373,10 @@ Rules: pytest runs with `filterwarnings = error`. Database tests never skip sile
 One-time machine preparation (owner):
 
 ```
-systemctl --user start docker-desktop      # or open Docker Desktop
-docker context use desktop-linux
+docker context use default   # Docker Engine: the service must be active and your user in the docker group
 ```
+
+Docker Desktop users start the app instead.
 
 Daily commands from the repository root:
 
@@ -398,9 +399,8 @@ make db-reset   destroy and recreate the local database (development only)
 | Hazard | Effect | Handling |
 |---|---|---|
 | `NODE_ENV=production` is exported in login shells | npm silently skips devDependencies, and the Vite dev server and Vitest would run in a production environment | `apps/web/.npmrc` sets `include=dev`. Makefile runs web commands with `env -u NODE_ENV` |
-| `/home` was 100 percent full (about 160 MB free) when checked | npm, uv, and Docker writes fail with `ENOSPC` | `make doctor` fails below 3 GB free. The owner frees space before setup |
-| A host PostgreSQL 18 service listens on 127.0.0.1:5432 | A Compose port 5432 would collide | Compose publishes on 127.0.0.1:5433. The host service is never used or modified |
-| Docker Desktop is not started by default and uses its own socket | `docker compose` fails with no daemon | Start it and select the `desktop-linux` context. `make doctor` checks it |
+| The repository filesystem can fill up | npm, uv, and Docker writes fail with `ENOSPC` | `make doctor` checks free space and fails below its minimum. The owner frees space before setup |
+| A selected Docker context points at a missing socket | Every docker command fails | `docker context use default` on Docker Engine. `make doctor` prints the active context |
 | Repository path contains a space | Unquoted paths break recipes and scripts | Quote every path. Use relative paths from the repository root |
 | Global Python packages are installed | They could be imported by accident | uv uses an isolated `apps/api/.venv` and never the global site-packages |
 

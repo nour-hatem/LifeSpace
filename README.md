@@ -147,7 +147,7 @@ The database is published only on `127.0.0.1:5433`. A host PostgreSQL service on
 | A port is in use (`5433`, `8000`, `5173`) | Another process owns it. Stop that process; `make doctor` lists the ports it checks. |
 | Writes fail with `ENOSPC` | Free space on the filesystem that holds the repository. At least 3 GB is required. |
 | npm skips devDependencies | The login shell exports `NODE_ENV=production`. `apps/web/.npmrc` sets `include=dev`, and every npm script runs through `env -u NODE_ENV`. |
-| uv tries to download Python | Not allowed here. Every uv call runs with `UV_PYTHON_DOWNLOADS=never` (exported by the Makefile); Python 3.14.4 is already installed. |
+| uv tries to download Python | Not allowed here. Every uv call runs with `UV_PYTHON_DOWNLOADS=never` (exported by the Makefile); Python 3.14.x is already installed. |
 
 ## License
 
