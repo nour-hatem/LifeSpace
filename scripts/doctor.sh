@@ -20,17 +20,34 @@ port_in_use() {
   ss -ltnH 2>/dev/null | awk '{print $4}' | grep -Eq "[:.]$1\$"
 }
 
-# Node.js: >=22.22.2 and <23.
+# Node.js: ^22.22.2, ^24.15.0, or >=26.0.0.
+node_ranges="^22.22.2 (22.22.2 up to below 23), ^24.15.0 (24.15.0 up to below 25), or 26.0.0 or newer"
+
+version_ge() {
+  [ "$(printf '%s\n%s\n' "$2" "$1" | sort -V | head -n 1)" = "$2" ]
+}
+
 if command -v node >/dev/null 2>&1; then
   node_version="$(node --version 2>/dev/null | sed 's/^v//')"
   node_major="${node_version%%.*}"
-  if [ "$node_major" = "22" ] && [ "$(printf '%s\n%s\n' 22.22.2 "$node_version" | sort -V | head -n 1)" = "22.22.2" ]; then
+  node_ok=0
+  case "$node_major" in
+    22) version_ge "$node_version" 22.22.2 && node_ok=1 ;;
+    24) version_ge "$node_version" 24.15.0 && node_ok=1 ;;
+    *)
+      case "$node_major" in
+        ''|*[!0-9]*) ;;
+        *) [ "$node_major" -ge 26 ] && node_ok=1 ;;
+      esac
+      ;;
+  esac
+  if [ "$node_ok" = 1 ]; then
     ok node "v$node_version"
   else
-    fail node "v$node_version is outside the required range (>=22.22.2, <23)"
+    fail node "v$node_version is outside the accepted ranges: $node_ranges; switch with nvm use, or use the system Node"
   fi
 else
-  fail node "not found on PATH (expected 22.22.3)"
+  fail node "not found on PATH; accepted ranges: $node_ranges; switch with nvm use, or use the system Node"
 fi
 
 # npm.
@@ -56,13 +73,14 @@ fi
 
 # Docker CLI and daemon.
 if command -v docker >/dev/null 2>&1; then
+  docker_context="$(docker context show 2>/dev/null || echo unknown)"
   if docker info >/dev/null 2>&1; then
-    ok docker "daemon reachable, server $(docker info --format '{{.ServerVersion}}' 2>/dev/null)"
+    ok docker "daemon reachable, context $docker_context, server $(docker info --format '{{.ServerVersion}}' 2>/dev/null)"
   else
-    fail docker "daemon unreachable; start Docker Desktop and run: docker context use desktop-linux"
+    fail docker "Docker daemon unreachable (active context: ${docker_context:-unknown}). On Docker Engine run: systemctl status docker (the service must be active and your user in the docker group) and docker context use default. On Docker Desktop start the app."
   fi
 else
-  fail docker "CLI not found on PATH; start Docker Desktop and run: docker context use desktop-linux"
+  fail docker "CLI not found on PATH (active context: unknown). On Docker Engine run: systemctl status docker (the service must be active and your user in the docker group) and docker context use default. On Docker Desktop start the app."
 fi
 
 # Free disk space on the filesystem that holds the repository.
