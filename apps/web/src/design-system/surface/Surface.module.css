@@ -1,0 +1,29 @@
+/* Surface styles use only design tokens (ADR 0003 item 6). */
+.surface {
+  border-radius: var(--radius-panel);
+}
+
+.flat {
+  background-color: var(--color-surface);
+}
+
+.floating {
+  background-color: var(--surface-floating);
+  -webkit-backdrop-filter: blur(var(--blur-surface));
+  backdrop-filter: blur(var(--blur-surface));
+  box-shadow: var(--shadow-floating);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .floating {
+    background-color: var(--color-surface);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .floating {
+    background-color: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
