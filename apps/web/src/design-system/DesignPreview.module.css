@@ -1,0 +1,140 @@
+/* Preview layout uses only design tokens; no raw color values. */
+.preview {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-7);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.note {
+  color: var(--color-text-muted);
+  max-width: 48rem;
+}
+
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.swatch {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--radius-control);
+  background-color: var(--color-surface);
+}
+
+.swatchColor {
+  display: block;
+  height: 2.5rem;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--color-text-muted);
+}
+
+.swatchName {
+  font-weight: var(--weight-medium);
+}
+
+.swatchValue {
+  font-family: ui-monospace, monospace;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.scale {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.scaleRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.scaleLabel {
+  min-width: 6rem;
+  color: var(--color-text-muted);
+  font-family: ui-monospace, monospace;
+  font-size: var(--text-sm);
+}
+
+.spacingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.spacingBar {
+  display: block;
+  height: 12px;
+  background-color: var(--color-cyan);
+  border-radius: var(--radius-control);
+}
+
+.buttonRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.surfaceRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-4);
+}
+
+.surfaceContent {
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+}
+
+.chipRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.focusDemo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.userText {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--radius-control);
+  background-color: var(--color-surface);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.inlineCode {
+  font-family: ui-monospace, monospace;
+  font-size: var(--text-sm);
+}
