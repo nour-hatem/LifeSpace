@@ -1,0 +1,89 @@
+/*
+ * Design tokens (ADR 0003 items 2 to 7, and the category accents from item 8).
+ * Every value mirrors src/design-system/tokens.ts, enforced by tokens.test.ts.
+ * Breakpoints cannot be CSS variables inside media queries, so they live only
+ * in tokens.ts (640, 1024, and 1440 px).
+ */
+:root {
+  color-scheme: dark;
+
+  /* Palette (ADR 0003 item 2). */
+  --color-bg: #080d1b;
+  --color-surface: #111a2e;
+  --color-primary: #3b82f6;
+  --color-secondary: #8b5cf6;
+  --color-cyan: #22d3ee;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-text: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-fill-primary: #2563eb;
+  --color-fill-danger: #dc2626;
+  --color-focus: #22d3ee;
+
+  /* Chip text tokens (ADR 0003 items 3 and 8). Primary, danger, and violet are
+     lightened in HSL just enough to reach 4.5:1 on their tinted background. */
+  --color-neutral-text: #94a3b8;
+  --color-primary-text: #5291f7;
+  --color-success-text: #22c55e;
+  --color-warning-text: #f59e0b;
+  --color-danger-text: #f15b5b;
+  --color-violet-text: #9f79f8;
+
+  /* Spacing, 4 px grid (ADR 0003 item 5). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Radii (ADR 0003 item 5). */
+  --radius-control: 6px;
+  --radius-panel: 12px;
+  --radius-round: 9999px;
+
+  /* Typography (ADR 0003 item 4). */
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Arabic", sans-serif;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+  --leading-body: 1.5;
+  --leading-heading: 1.25;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* Floating surfaces (ADR 0003 item 6). */
+  --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --blur-surface: 12px;
+  --surface-floating: rgba(17, 26, 46, 0.8);
+
+  /* Motion (ADR 0003 item 7). */
+  --duration-fast: 150ms;
+  --duration-panel: 250ms;
+  --duration-settle: 400ms;
+  --ease-out: ease-out;
+
+  /* Stacking order. */
+  --z-base: 0;
+  --z-dock: 20;
+  --z-panel: 30;
+  --z-menu: 40;
+  --z-toast: 50;
+
+  /* Category accents (ADR 0003 item 8). */
+  --accent-work: #3b82f6;
+  --accent-education: #22d3ee;
+  --accent-learning: #8b5cf6;
+  --accent-personal: #94a3b8;
+  --accent-projects: #93c5fd;
+}
