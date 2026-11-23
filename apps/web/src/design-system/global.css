@@ -1,0 +1,112 @@
+/*
+ * Global styles: reset, page background, focus ring, and reduced motion
+ * (ADR 0003 items 6, 7, and 14). Imported once from src/main.tsx after
+ * tokens.css.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--leading-body);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(
+      circle at 12% 8%,
+      color-mix(in srgb, var(--color-primary) 18%, transparent) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 88% 92%,
+      color-mix(in srgb, var(--color-secondary) 14%, transparent) 0%,
+      transparent 50%
+    );
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: var(--leading-heading);
+  font-weight: var(--weight-semibold);
+}
+
+h1 {
+  font-size: var(--text-3xl);
+}
+
+h2 {
+  font-size: var(--text-2xl);
+}
+
+h3 {
+  font-size: var(--text-xl);
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/*
+ * Apply dir="auto" in markup; this class sets unicode-bidi plaintext so the
+ * browser picks the direction from the first strong character (ADR 0003
+ * item 14, for example Arabic task titles).
+ */
+.user-text {
+  unicode-bidi: plaintext;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,85 @@
+/* Button styles use only design tokens (ADR 0003 items 2, 3, 7, and 14). */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-heading);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.md {
+  min-height: 44px;
+}
+
+.lg {
+  min-height: 52px;
+  padding: 0 var(--space-5);
+  font-size: var(--text-lg);
+}
+
+.primary {
+  background-color: var(--color-fill-primary);
+  color: var(--color-text);
+}
+
+.secondary {
+  background-color: var(--color-surface);
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
+
+.ghost {
+  background-color: transparent;
+  color: var(--color-text);
+}
+
+.danger {
+  background-color: var(--color-fill-danger);
+  color: var(--color-text);
+}
+
+.button:hover:not(:disabled) {
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.button:active:not(:disabled) {
+  box-shadow: 0 0 0 2px var(--color-focus);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-text);
+  border-right-color: transparent;
+  border-radius: var(--radius-round);
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-right-color: var(--color-text);
+  }
+}

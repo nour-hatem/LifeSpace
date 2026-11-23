@@ -18,7 +18,7 @@ docs/
     └── adr/
 ```
 
-Architecture decision records live in `engineering/adr/` (one file per decision: `0001-m1-domain-decisions.md`, `0002-m2-persistence-and-task-api.md`). A folder for review reports (`engineering/reviews/`) is created when the first report is written.
+Architecture decision records live in `engineering/adr/` (one file per decision: `0001-m1-domain-decisions.md`, `0002-m2-persistence-and-task-api.md`, `0003-m3-frontend-decisions.md`). A folder for review reports (`engineering/reviews/`) is created when the first report is written.
 
 ## Specifications
 

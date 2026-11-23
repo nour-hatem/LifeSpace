@@ -1,0 +1,32 @@
+/* Skeleton styles use only design tokens (ADR 0003 items 6 and 7). */
+.skeleton {
+  display: block;
+  border-radius: var(--radius-control);
+  background-color: var(--color-surface);
+  background-image: linear-gradient(
+    90deg,
+    var(--color-surface) 0%,
+    var(--color-bg) 50%,
+    var(--color-surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1500ms var(--ease-out) infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background-image: none;
+    background-color: var(--color-surface);
+  }
+}
